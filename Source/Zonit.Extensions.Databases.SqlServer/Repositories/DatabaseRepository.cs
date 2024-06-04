@@ -84,8 +84,9 @@ public abstract class DatabaseRepository<TEntity, TType>(DbContext _context) : I
         _context.Entry(existingEntity).CurrentValues.SetValues(entity);
         //_context.Set<T1>().Update(entity);
 
-        if (await _context.SaveChangesAsync(cancellationToken) > 0 is false)
-            throw new DatabaseException("There was a problem when updating record.");
+        if (await _context.SaveChangesAsync(cancellationToken) > 0) // is false
+            return false;
+            //throw new DatabaseException("There was a problem when updating record.");
 
         return true;
     }
@@ -103,8 +104,9 @@ public abstract class DatabaseRepository<TEntity, TType>(DbContext _context) : I
             .Set<TEntity>()
             .Remove(entity);
 
-        if (await _context.SaveChangesAsync(cancellationToken) > 0 is false)
-            throw new DatabaseException("There was a problem when deleting record.");
+        if (await _context.SaveChangesAsync(cancellationToken) > 0) //is false
+            return false;
+        //throw new DatabaseException("There was a problem when deleting record.");
 
         return true;
     }
@@ -121,8 +123,9 @@ public abstract class DatabaseRepository<TEntity, TType>(DbContext _context) : I
             .Set<TEntity>()
             .Remove(entity);
 
-        if (await _context.SaveChangesAsync(cancellationToken) > 0 is false)
-            throw new DatabaseException("There was a problem when deleting record.");
+        if (await _context.SaveChangesAsync(cancellationToken) > 0) // is false
+            return false;
+            //throw new DatabaseException("There was a problem when deleting record.");
 
         return true;
     }
