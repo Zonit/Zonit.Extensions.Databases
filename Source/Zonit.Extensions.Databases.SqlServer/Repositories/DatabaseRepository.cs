@@ -8,7 +8,6 @@ using Zonit.Extensions.Databases.SqlServer.Services;
 namespace Zonit.Extensions.Databases.SqlServer.Repositories;
 
 // TODO: Pomyśl by wywalić ID, zrobić na predicate
-
 public abstract class DatabaseRepository<TEntity, TType>(DbContext _context) : IDatabaseRepository<TEntity, TType> 
     where TEntity : class
 {
