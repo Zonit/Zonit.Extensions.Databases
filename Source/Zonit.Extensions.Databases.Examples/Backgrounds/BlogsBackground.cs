@@ -35,5 +35,18 @@ internal class BlogsBackground(
             else
                 _logger.LogInformation("Blogs not found");
         }
+
+        // Read first
+        using (var repository = _blogsRepository)
+        {
+            var blog = await repository
+                .OrderBy(x => x.Id)
+                .GetFirstAsync<BlogDto>(stoppingToken);
+
+            if (blog is not null)
+                _logger.LogInformation("First blog: {Id} {Title} {Content} {Created}", blog.Id, blog.Title, blog.Content, blog.Created);
+            else
+                _logger.LogInformation("Blog not found");
+        }
     }
 }

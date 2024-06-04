@@ -79,6 +79,12 @@ var blogSingleDto = await _blogRepository.GetAsync<BlogDto>(x => x.Title == "Hel
 var blogFirst = await _blogRepository.GetFirstAsync(x => x.Title == "Hello World");
 var blogFirstDto = await _blogRepository.GetFirstAsync<BlogDto>(x => x.Title == "Hello World");
 ```
+or
+```cs
+using var repository = _blogsRepository;
+var blogs = await repository.OrderBy(x => x.Created).GetFirstAsync();
+var blogsDto = await repository.OrderBy(x => x.Created).GetFirstAsync<BlogDto>();
+```
 
 **Update**
 ```cs
@@ -105,63 +111,78 @@ var blogsDto = await repository.GetAsync<BlogDto>();
 
 **API IDatabaseRepository<TEntity, TType>**
 ```cs
-    Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default);
-    Task<TDto> AddAsync<TDto>(TEntity entity, CancellationToken cancellationToken = default);
+Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default);
+Task<TDto> AddAsync<TDto>(TEntity entity, CancellationToken cancellationToken = default);
 
-    Task<TEntity?> GetAsync(TType id, CancellationToken cancellationToken = default);
-    Task<TDto?> GetAsync<TDto>(TType id, CancellationToken cancellationToken = default);
+Task<TEntity?> GetAsync(TType id, CancellationToken cancellationToken = default);
+Task<TDto?> GetAsync<TDto>(TType id, CancellationToken cancellationToken = default);
 
-    Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
-    Task<TDto?> GetAsync<TDto>(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+Task<TDto?> GetAsync<TDto>(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
-    Task<TEntity?> GetFirstAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
-    Task<TDto?> GetFirstAsync<TDto>(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+Task<TEntity?> GetFirstAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+Task<TDto?> GetFirstAsync<TDto>(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
-    Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
+Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
-    Task<bool> DeleteAsync(TType entity, CancellationToken cancellationToken = default);
-    Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
+Task<bool> DeleteAsync(TType entity, CancellationToken cancellationToken = default);
+Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
 ```
 
 **API IDatabasesRepository\<TEntity>**
 ```cs
-    IDatabasesRepository<TEntity> Skip(int skip);
-    IDatabasesRepository<TEntity> Take(int take);
-    IDatabasesRepository<TEntity> Include(Expression<Func<TEntity, object>> includeExpression);
-    IDatabasesRepository<TEntity> Where(Expression<Func<TEntity, bool>> predicate);
-    IDatabasesRepository<TEntity> OrderBy(Expression<Func<TEntity, object>> keySelector);
-    IDatabasesRepository<TEntity> OrderByDescending(Expression<Func<TEntity, object>> keySelector);
-    IDatabasesRepository<TEntity> Select(Expression<Func<TEntity, TEntity>> selector);
+IDatabasesRepository<TEntity> Skip(int skip);
+IDatabasesRepository<TEntity> Take(int take);
+IDatabasesRepository<TEntity> Include(Expression<Func<TEntity, object>> includeExpression);
+IDatabasesRepository<TEntity> Where(Expression<Func<TEntity, bool>> predicate);
+IDatabasesRepository<TEntity> OrderBy(Expression<Func<TEntity, object>> keySelector);
+IDatabasesRepository<TEntity> OrderByDescending(Expression<Func<TEntity, object>> keySelector);
+IDatabasesRepository<TEntity> Select(Expression<Func<TEntity, TEntity>> selector);
 
-    /// <summary>
-    /// Returns a list of available results 
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<IReadOnlyCollection<TEntity>?> GetAsync(CancellationToken cancellationToken = default);
+/// <summary>
+/// Returns a list of available results 
+/// </summary>
+/// <param name="cancellationToken"></param>
+/// <returns></returns>
+Task<IReadOnlyCollection<TEntity>?> GetAsync(CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Returns a list of available results by changing them to DTOs
-    /// </summary>
-    /// <typeparam name="TDto"></typeparam>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<IReadOnlyCollection<TDto>?> GetAsync<TDto>(CancellationToken cancellationToken = default);
+/// <summary>
+/// Returns a list of available results by changing them to DTOs
+/// </summary>
+/// <typeparam name="TDto"></typeparam>
+/// <param name="cancellationToken"></param>
+/// <returns></returns>
+Task<IReadOnlyCollection<TDto>?> GetAsync<TDto>(CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Update multiple data
-    /// </summary>
-    /// <param name="predicate">Data to be changed</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<int?> UpdateRangeAsync(Action<TEntity> updateAction, CancellationToken cancellationToken = default);
+/// <summary>
+/// Returns a single result
+/// </summary>
+/// <param name="cancellationToken"></param>
+/// <returns></returns>
+Task<TEntity?> GetFirstAsync(CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Get the number of available results
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<int> GetCountAsync(CancellationToken cancellationToken = default);
+/// <summary>
+/// Returns a single result by changing it to DTO
+/// </summary>
+/// <typeparam name="TDto"></typeparam>
+/// <param name="cancellationToken"></param>
+/// <returns></returns>
+Task<TDto?> GetFirstAsync<TDto>(CancellationToken cancellationToken = default);
+
+/// <summary>
+/// Update multiple data
+/// </summary>
+/// <param name="predicate">Data to be changed</param>
+/// <param name="cancellationToken"></param>
+/// <returns></returns>
+Task<int?> UpdateRangeAsync(Action<TEntity> updateAction, CancellationToken cancellationToken = default);
+
+/// <summary>
+/// Get the number of available results
+/// </summary>
+/// <param name="cancellationToken"></param>
+/// <returns></returns>
+Task<int> GetCountAsync(CancellationToken cancellationToken = default);
 ```
 
 For more information, see the Examples project.

@@ -45,6 +45,34 @@ public abstract class DatabasesRepository<TEntity, TContext>(IDbContextFactory<T
         return result;
     }
 
+    public async Task<TEntity?> GetFirstAsync(CancellationToken cancellationToken = default)
+    {
+        using var context = await _context.CreateDbContextAsync(cancellationToken);
+
+        var entitie = context.Set<TEntity>()
+            .AsSplitQuery()
+            .AsNoTracking();
+
+        entitie = FilterExpression is not null ? entitie.Where(FilterExpression) : entitie;
+        entitie = OrderByColumnSelector is not null ? entitie.OrderBy(OrderByColumnSelector) : entitie;
+        entitie = OrderByDescendingColumnSelector is not null ? entitie.OrderByDescending(OrderByDescendingColumnSelector) : entitie;
+        entitie = SelectColumns is not null ? entitie.Select(SelectColumns) : entitie;
+
+        if (IncludeExpressions is not null)
+            foreach (var includeExpression in IncludeExpressions)
+                entitie = entitie.Include(includeExpression);
+
+        entitie = SkipCount is not null ? entitie.Skip(SkipCount.Value) : entitie;
+        entitie = TakeCount is not null ? entitie.Take(TakeCount.Value) : entitie;
+
+        var result = await entitie.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+
+        if (result is null)
+            return null;
+
+        return result;
+    }
+
     public async Task<int?> UpdateRangeAsync(Action<TEntity> updateAction, CancellationToken cancellationToken = default)
     {
         using var context = await _context.CreateDbContextAsync(cancellationToken);
@@ -72,7 +100,10 @@ public abstract class DatabasesRepository<TEntity, TContext>(IDbContextFactory<T
 
     public async Task<IReadOnlyCollection<TDto>?> GetAsync<TDto>(CancellationToken cancellationToken = default)
         => MappingService.Dto<TDto>(await this.GetAsync(cancellationToken));
-    
+
+    public async Task<TDto?> GetFirstAsync<TDto>(CancellationToken cancellationToken = default)
+        => MappingService.Dto<TDto>(await this.GetFirstAsync(cancellationToken));
+
     public async Task<int> GetCountAsync(CancellationToken cancellationToken = default)
     {
         using var context = await _context.CreateDbContextAsync(cancellationToken);
