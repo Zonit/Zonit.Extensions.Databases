@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using Zonit.Extensions.Databases.Abstractions.Repositories;
 using Zonit.Extensions.Databases.SqlServer.Services;
 
 namespace Zonit.Extensions.Databases.SqlServer.Repositories;

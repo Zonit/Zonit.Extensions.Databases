@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Zonit.Extensions.Databases.Abstractions.Repositories;
+namespace Zonit.Extensions.Databases;
 
 /// <summary>
 /// 

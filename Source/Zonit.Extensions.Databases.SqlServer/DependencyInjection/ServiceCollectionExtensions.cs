@@ -2,9 +2,8 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Zonit.Extensions.Databases.Abstractions.Options;
-using Zonit.Extensions.Databases.Abstractions.Exceptions;
 using Zonit.Extensions.Databases.SqlServer.Backgrounds;
+using Zonit.Extensions.Databases;
 
 namespace Zonit.Extensions;
 

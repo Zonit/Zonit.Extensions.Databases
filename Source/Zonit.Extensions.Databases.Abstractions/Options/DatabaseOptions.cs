@@ -1,4 +1,4 @@
-﻿namespace Zonit.Extensions.Databases.Abstractions.Options;
+﻿namespace Zonit.Extensions.Databases;
 
 /// <summary>
 /// Database connection options

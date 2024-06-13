@@ -1,6 +1,4 @@
-﻿using Zonit.Extensions.Databases.Abstractions.Exceptions;
-
-namespace Zonit.Extensions.Databases.SqlServer.Services;
+﻿namespace Zonit.Extensions.Databases.SqlServer.Services;
 
 internal static class MappingService
 {
