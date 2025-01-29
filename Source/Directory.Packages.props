@@ -1,33 +1,47 @@
 <Project>
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <AssemblyVersion>0.1.4</AssemblyVersion>
-    <FileVersion>$(AssemblyVersion)</FileVersion>
-    <Version>$(AssemblyVersion)</Version>
-    <Authors>Zonit</Authors>
-    <Title>Zonit.Extensions.Databases</Title>
-    <PackageOutputPath>$(SolutionDir)Packages</PackageOutputPath>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PackageProjectUrl>https://github.com/Zonit</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Zonit/Zonit.Extensions.Databases</RepositoryUrl>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="8.0.5" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="8.0.5" />
-    <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.4" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.4" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageVersion>
-  </ItemGroup>
+	<PropertyGroup>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	  
+		<AssemblyVersion>0.1.5</AssemblyVersion>
+		<FileVersion>$(AssemblyVersion)</FileVersion>
+		<Version>$(AssemblyVersion)</Version>
+		<Authors>Zonit</Authors>
+		<Title>Zonit.Extensions.Databases</Title>
+		<PackageOutputPath>$(SolutionDir)Packages</PackageOutputPath>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageProjectUrl>https://github.com/Zonit</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Zonit/Zonit.Extensions.Databases</RepositoryUrl>
+
+		<!-- Debugging symbol settings -->
+		<IncludeSymbols>true</IncludeSymbols>
+		<IncludeSource>true</IncludeSource>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+		<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.12" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.12" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.12" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.12">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageVersion>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+		<PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
+		<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.1" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.1" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.1" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.1" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageVersion>
+	</ItemGroup>
 </Project>
