@@ -4,6 +4,6 @@ using Zonit.Extensions.Databases.SqlServer.Repositories;
 
 namespace Zonit.Extensions.Databases.Examples.Repositories;
 
-internal class BlogRepository(DatabaseContext _context) : DatabaseRepository<Blog, Guid>(_context), IBlogRepository
+internal class BlogRepository(DatabaseContext _context, IServiceProvider _serviceProvider) : DatabaseRepository<Blog, Guid>(_context, _serviceProvider), IBlogRepository
 {
 }

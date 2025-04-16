@@ -8,4 +8,5 @@ internal class BlogDto(Blog x)
     public string Title { get; set; } = $"Title: {x.Title}";
     public string Content { get; set; } = $"Content: {x.Content}";
     public string Created { get; set; } = $"Created: {x.Created:G}";
+    public string User { get; set; } = $"User: {x.User?.Name}";
 }

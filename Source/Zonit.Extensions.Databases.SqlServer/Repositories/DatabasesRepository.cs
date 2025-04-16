@@ -4,17 +4,21 @@ using Zonit.Extensions.Databases.SqlServer.Services;
 
 namespace Zonit.Extensions.Databases.SqlServer.Repositories;
 
-public abstract class DatabasesRepository<TEntity, TContext>(IDbContextFactory<TContext> _context) : IDatabasesRepository<TEntity> 
+public abstract class DatabasesRepository<TEntity, TContext>(
+    IDbContextFactory<TContext> _context,
+    IServiceProvider _serviceProvider
+    ) : IDatabasesRepository<TEntity> 
     where TEntity : class
     where TContext : DbContext
 {
-    List<Expression<Func<TEntity, object>>>? IncludeExpressions { get; set; }
-    Expression<Func<TEntity, bool>>? FilterExpression { get; set; }
-    Expression<Func<TEntity, object>>? OrderByColumnSelector { get; set; }
-    Expression<Func<TEntity, object>>? OrderByDescendingColumnSelector { get; set; }
-    Expression<Func<TEntity, TEntity>>? SelectColumns { get; set; }
-    int? SkipCount { get; set; }
-    int? TakeCount { get; set; }
+    public List<Expression<Func<TEntity, object?>>> Extensions { get; set; } = [];
+    public List<Expression<Func<TEntity, object>>>? IncludeExpressions { get; set; }
+    public Expression<Func<TEntity, bool>>? FilterExpression { get; set; }
+    public Expression<Func<TEntity, object>>? OrderByColumnSelector { get; set; }
+    public Expression<Func<TEntity, object>>? OrderByDescendingColumnSelector { get; set; }
+    public Expression<Func<TEntity, TEntity>>? SelectColumns { get; set; }
+    public int? SkipCount { get; set; }
+    public int? TakeCount { get; set; }
 
     public async Task<IReadOnlyCollection<TEntity>?> GetAsync(CancellationToken cancellationToken = default)
     {
@@ -40,6 +44,8 @@ public abstract class DatabasesRepository<TEntity, TContext>(IDbContextFactory<T
 
         if (result is null || result.Count == 0)
             return null;
+
+        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _serviceProvider, cancellationToken);
 
         return result;
     }
@@ -68,6 +74,8 @@ public abstract class DatabasesRepository<TEntity, TContext>(IDbContextFactory<T
 
         if (result is null)
             return null;
+
+        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _serviceProvider, cancellationToken);
 
         return result;
     }
@@ -116,72 +124,90 @@ public abstract class DatabasesRepository<TEntity, TContext>(IDbContextFactory<T
         return await entitie.CountAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    private DatabasesRepository<TEntity, TContext> Clone()
+    {
+        var newRepo = (DatabasesRepository<TEntity, TContext>)Activator.CreateInstance(this.GetType(), _context, _serviceProvider)!;
+
+        newRepo.Extensions = new List<Expression<Func<TEntity, object?>>>(this.Extensions);
+        newRepo.IncludeExpressions = this.IncludeExpressions is not null ? new List<Expression<Func<TEntity, object>>>(this.IncludeExpressions) : null;
+        newRepo.FilterExpression = this.FilterExpression;
+        newRepo.OrderByColumnSelector = this.OrderByColumnSelector;
+        newRepo.OrderByDescendingColumnSelector = this.OrderByDescendingColumnSelector;
+        newRepo.SelectColumns = this.SelectColumns;
+        newRepo.SkipCount = this.SkipCount;
+        newRepo.TakeCount = this.TakeCount;
+
+        return newRepo;
+    }
+
+    public IDatabasesRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension)
+    {
+        var newRepo = Clone();
+        newRepo.Extensions.Add(extension);
+        return newRepo;
+    }
+
+
     public IDatabasesRepository<TEntity> Include(Expression<Func<TEntity, object>> includeExpression)
     {
-        IncludeExpressions ??= [];
-        IncludeExpressions.Add(includeExpression);
-        return this;
+        var newRepo = Clone();
+        newRepo.IncludeExpressions ??= [];
+        newRepo.IncludeExpressions.Add(includeExpression);
+        return newRepo;
     }
 
     public IDatabasesRepository<TEntity> OrderBy(Expression<Func<TEntity, object>> keySelector)
     {
-        OrderByColumnSelector = keySelector;
-        return this;
+        var newRepo = Clone();
+        newRepo.OrderByColumnSelector = keySelector;
+        return newRepo;
     }
 
     public IDatabasesRepository<TEntity> OrderByDescending(Expression<Func<TEntity, object>> keySelector)
     {
-        OrderByDescendingColumnSelector = keySelector;
-        return this;
+        var newRepo = Clone();
+        newRepo.OrderByDescendingColumnSelector = keySelector;
+        return newRepo;
     }
 
     public IDatabasesRepository<TEntity> Select(Expression<Func<TEntity, TEntity>> selector)
     {
-        SelectColumns = selector;
-        return this;
+        var newRepo = Clone();
+        newRepo.SelectColumns = selector;
+        return newRepo;
     }
 
     public IDatabasesRepository<TEntity> Skip(int skip)
     {
-        SkipCount = skip;
-        return this;
+        var newRepo = Clone();
+        newRepo.SkipCount = skip;
+        return newRepo;
     }
 
     public IDatabasesRepository<TEntity> Take(int take)
     {
-        TakeCount = take;
-        return this;
+        var newRepo = Clone();
+        newRepo.TakeCount = take;
+        return newRepo;
     }
 
     public IDatabasesRepository<TEntity> Where(Expression<Func<TEntity, bool>> predicate)
     {
-        if (FilterExpression is null)
-            FilterExpression = predicate;
+        var newRepo = Clone();
+
+        if (newRepo.FilterExpression is null)
+        {
+            newRepo.FilterExpression = predicate;
+        }
         else
         {
-            var invokedExpr = Expression.Invoke(predicate, FilterExpression.Parameters.Cast<Expression>());
-            FilterExpression = Expression.Lambda<Func<TEntity, bool>>(Expression.AndAlso(FilterExpression.Body, invokedExpr), FilterExpression.Parameters);
+            var invokedExpr = Expression.Invoke(predicate, newRepo.FilterExpression.Parameters.Cast<Expression>());
+            newRepo.FilterExpression = Expression.Lambda<Func<TEntity, bool>>(
+                Expression.AndAlso(newRepo.FilterExpression.Body, invokedExpr),
+                newRepo.FilterExpression.Parameters
+            );
         }
-        return this;
-    }
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            IncludeExpressions = null;
-            FilterExpression = null;
-            OrderByColumnSelector = null;
-            OrderByDescendingColumnSelector = null;
-            SelectColumns = null;
-            SkipCount = null;
-            TakeCount = null;
-        }
+        return newRepo;
     }
 }

@@ -13,40 +13,38 @@ internal class BlogsBackground(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // Update range
-        using (var repository = _blogsRepository)
-        {
-            var count = await _blogsRepository.Where(x => x.Created > DateTime.Now.AddYears(-1)).UpdateRangeAsync(x => {
-                x.Title = "New all title";
-                x.Content = "New all content";
-            }, stoppingToken);
+        var count = await _blogsRepository.Where(x => x.Created > DateTime.Now.AddYears(-1)).UpdateRangeAsync(x => {
+            x.Title = "New all title";
+            x.Content = "New all content";
+        }, stoppingToken);
 
-            if (count is not null)
-                _logger.LogInformation("Updated {Count} blogs", count);
-        }
+        if (count is not null)
+            _logger.LogInformation("Updated {Count} blogs", count);
+
 
         // Read
-        using (var repository = _blogsRepository)
-        {
-            var blogs = await repository.GetAsync<BlogDto>(stoppingToken);
+        var blogs = await _blogsRepository
+            .Extension(x => x.User)
+            .GetAsync<BlogDto>(stoppingToken);
 
-            if(blogs is not null)
-                foreach (var blog in blogs)
-                    _logger.LogInformation("Blog: {Id} {Title} {Content} {Created}", blog.Id, blog.Title, blog.Content, blog.Created);
-            else
-                _logger.LogInformation("Blogs not found");
-        }
+        if(blogs is not null)
+            foreach (var blog in blogs)
+            {
+                _logger.LogInformation("Blog: {User} {Id} {Title} {Content} {Created}", blog.User, blog.Id, blog.Title, blog.Content, blog.Created);
+            }
+        else
+            _logger.LogInformation("Blogs not found");
+        
 
         // Read first
-        using (var repository = _blogsRepository)
-        {
-            var blog = await repository
-                .OrderBy(x => x.Id)
-                .GetFirstAsync<BlogDto>(stoppingToken);
+        var blogFirst = await _blogsRepository
+            .OrderBy(x => x.Id)
+            .GetFirstAsync<BlogDto>(stoppingToken);
 
-            if (blog is not null)
-                _logger.LogInformation("First blog: {Id} {Title} {Content} {Created}", blog.Id, blog.Title, blog.Content, blog.Created);
-            else
-                _logger.LogInformation("Blog not found");
-        }
+        if (blogFirst is not null)
+            _logger.LogInformation("First blog: {Id} {Title} {Content} {Created}", blogFirst.Id, blogFirst.Title, blogFirst.Content, blogFirst.Created);
+        else
+            _logger.LogInformation("Blog not found");
+        
     }
 }

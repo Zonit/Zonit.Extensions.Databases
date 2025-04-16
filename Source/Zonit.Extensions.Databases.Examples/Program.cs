@@ -4,6 +4,8 @@ using Zonit.Extensions.Databases.Examples.Data;
 using Zonit.Extensions.Databases.Examples.Repositories;
 using Microsoft.Extensions.Configuration;
 using Zonit.Extensions.Databases.Examples.Backgrounds;
+using Zonit.Extensions.Databases.Examples.Extensions;
+using Zonit.Extensions.Databases.Examples.Entities;
 
 namespace Zonit.Extensions.Databases.Examples;
 
@@ -57,6 +59,10 @@ internal class Program
 
         builder.Services.AddHostedService<BlogBackground>();
         builder.Services.AddHostedService<BlogsBackground>();
+
+        builder.Services.AddHostedService<BlogExtensionBackground>();
+        builder.Services.AddScoped<IDatabaseExtension<UserModel>, UserExtension>();
+        builder.Services.AddScoped<IDatabaseExtension<OrganizationModel>, OrganizationExtension>();
 
         var app = builder.Build();
         app.Run();
