@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Zonit.Extensions.Databases.SqlServer.Backgrounds;
 using Zonit.Extensions.Databases;
+using Zonit.Extensions.Databases.SqlServer;
 
 namespace Zonit.Extensions;
 
@@ -21,6 +22,8 @@ public static class ServiceCollectionExtensions
         services.AddDbOptionsSqlServer();
         services.AddDbContextSqlServer<TContext>();
         services.AddDbMigrationSqlServer<TContext>();
+
+        services.AddScoped<Context<TContext>>();
 
         return services;
     }

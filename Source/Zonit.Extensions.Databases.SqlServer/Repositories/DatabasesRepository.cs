@@ -4,12 +4,10 @@ using Zonit.Extensions.Databases.SqlServer.Services;
 
 namespace Zonit.Extensions.Databases.SqlServer.Repositories;
 
-public abstract class DatabasesRepository<TEntity, TContext>(
-    IDbContextFactory<TContext> _context,
-    IServiceProvider _serviceProvider
+public abstract class DatabasesRepository<TEntity>(
+    ContextBase _context
     ) : IDatabasesRepository<TEntity> 
     where TEntity : class
-    where TContext : DbContext
 {
     public List<Expression<Func<TEntity, object?>>> Extensions { get; set; } = [];
     public List<Expression<Func<TEntity, object>>>? IncludeExpressions { get; set; }
@@ -22,7 +20,7 @@ public abstract class DatabasesRepository<TEntity, TContext>(
 
     public async Task<IReadOnlyCollection<TEntity>?> GetAsync(CancellationToken cancellationToken = default)
     {
-        using var context = await _context.CreateDbContextAsync(cancellationToken);
+        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entitie = context.Set<TEntity>()
             .AsSplitQuery()
@@ -45,14 +43,14 @@ public abstract class DatabasesRepository<TEntity, TContext>(
         if (result is null || result.Count == 0)
             return null;
 
-        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _serviceProvider, cancellationToken);
+        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _context.ServiceProvider, cancellationToken);
 
         return result;
     }
 
     public async Task<TEntity?> GetFirstAsync(CancellationToken cancellationToken = default)
     {
-        using var context = await _context.CreateDbContextAsync(cancellationToken);
+        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entitie = context.Set<TEntity>()
             .AsSplitQuery()
@@ -75,14 +73,14 @@ public abstract class DatabasesRepository<TEntity, TContext>(
         if (result is null)
             return null;
 
-        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _serviceProvider, cancellationToken);
+        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _context.ServiceProvider, cancellationToken);
 
         return result;
     }
 
     public async Task<int?> UpdateRangeAsync(Action<TEntity> updateAction, CancellationToken cancellationToken = default)
     {
-        using var context = await _context.CreateDbContextAsync(cancellationToken);
+        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entitie = context.Set<TEntity>()
             .AsSplitQuery()
@@ -113,7 +111,7 @@ public abstract class DatabasesRepository<TEntity, TContext>(
 
     public async Task<int> GetCountAsync(CancellationToken cancellationToken = default)
     {
-        using var context = await _context.CreateDbContextAsync(cancellationToken);
+        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entitie = context.Set<TEntity>()
             .AsNoTracking();
@@ -124,9 +122,9 @@ public abstract class DatabasesRepository<TEntity, TContext>(
         return await entitie.CountAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private DatabasesRepository<TEntity, TContext> Clone()
+    private DatabasesRepository<TEntity> Clone()
     {
-        var newRepo = (DatabasesRepository<TEntity, TContext>)Activator.CreateInstance(this.GetType(), _context, _serviceProvider)!;
+        var newRepo = (DatabasesRepository<TEntity>)Activator.CreateInstance(this.GetType(), _context)!;
 
         newRepo.Extensions = new List<Expression<Func<TEntity, object?>>>(this.Extensions);
         newRepo.IncludeExpressions = this.IncludeExpressions is not null ? new List<Expression<Func<TEntity, object>>>(this.IncludeExpressions) : null;

@@ -7,10 +7,9 @@ using Zonit.Extensions.Databases.SqlServer.Services;
 namespace Zonit.Extensions.Databases.SqlServer.Repositories;
 
 // TODO: Pomyśl by wywalić ID, zrobić na predicate
-public abstract class DatabaseRepository<TEntity, TType>(
-    DbContext _context,
-    IServiceProvider _serviceProvider
-    ) : IDatabaseRepository<TEntity, TType> 
+public abstract class DatabaseRepository<TEntity>(
+    ContextBase _context
+    ) : IDatabaseRepository<TEntity> 
     where TEntity : class
 {
     public List<Expression<Func<TEntity, object?>>> Extensions { get; set; } = [];
@@ -20,9 +19,11 @@ public abstract class DatabaseRepository<TEntity, TType>(
         if (entity is null)
             throw new DatabaseException($"The {nameof(entity)} parameter cannot be null.");
 
-        await _context.Set<TEntity>().AddAsync(entity, cancellationToken);
+        await _context.DbContext
+            .Set<TEntity>()
+            .AddAsync(entity, cancellationToken);
 
-        if (await _context.SaveChangesAsync(cancellationToken) > 0 is false)
+        if (await _context.DbContext.SaveChangesAsync(cancellationToken) > 0 is false)
             throw new DatabaseException("There was a problem when creating record.");
 
         return entity;
@@ -31,33 +32,45 @@ public abstract class DatabaseRepository<TEntity, TType>(
     public async Task<TDto> AddAsync<TDto>(TEntity entity, CancellationToken cancellationToken = default)
         => MappingService.Dto<TDto>(await this.AddAsync(entity, cancellationToken));
 
-    public async Task<TEntity?> GetAsync(TType id, CancellationToken cancellationToken = default)
+    private async Task<TEntity?> GetAsyncInternal<TId>(TId id, CancellationToken cancellationToken = default)
     {
         var property = typeof(TEntity).GetProperty("Id", BindingFlags.Public | BindingFlags.Instance);
 
-        if (property is null || property.PropertyType != typeof(TType))
-            throw new DatabaseException($"Entity's Id property not found or type mismatched with {typeof(TType).Name}.");
+        if (property is null || property.PropertyType != typeof(TId))
+            throw new DatabaseException($"Entity's Id property not found or type mismatched with {typeof(TId).Name}.");
 
-        var result = await _context
+        var result = await _context.DbContext
             .Set<TEntity>()
             .AsNoTracking()
-            .Where(x => ((TType)property.GetValue(x)!).Equals(id))
-            .SingleOrDefaultAsync(cancellationToken);
+            .Where(x => ((TId)property.GetValue(x)!).Equals(id))
+            .SingleOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
 
-        if (result == null)
+        if (result is null)
             return null;
 
-        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _serviceProvider, cancellationToken);
+        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _context.ServiceProvider, cancellationToken)
+            .ConfigureAwait(false);
 
         return result;
     }
 
-    public async Task<TDto?> GetAsync<TDto>(TType id, CancellationToken cancellationToken = default)
-        => MappingService.Dto<TDto?>(await this.GetAsync(id, cancellationToken));
+    public async Task<TEntity?> GetAsync(int id, CancellationToken cancellationToken = default)
+        => await GetAsyncInternal(id, cancellationToken);
+
+    public async Task<TDto?> GetAsync<TDto>(int id, CancellationToken cancellationToken = default)
+        => MappingService.Dto<TDto?>(await GetAsync(id, cancellationToken).ConfigureAwait(false));
+
+    public async Task<TEntity?> GetAsync(Guid id, CancellationToken cancellationToken = default)
+        => await GetAsyncInternal(id, cancellationToken);
+
+    public async Task<TDto?> GetAsync<TDto>(Guid id, CancellationToken cancellationToken = default)
+        => MappingService.Dto<TDto?>(await GetAsync(id, cancellationToken).ConfigureAwait(false));
+
 
     public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        var result = await _context
+        var result = await _context.DbContext
             .Set<TEntity>()
             .AsNoTracking()
             .Where(predicate)
@@ -66,7 +79,7 @@ public abstract class DatabaseRepository<TEntity, TType>(
         if (result == null)
             return null;
 
-        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _serviceProvider, cancellationToken);
+        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _context.ServiceProvider, cancellationToken);
 
         return result;
     }
@@ -76,7 +89,7 @@ public abstract class DatabaseRepository<TEntity, TType>(
 
     public async Task<TEntity?> GetFirstAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        var result = await _context
+        var result = await _context.DbContext
             .Set<TEntity>()
             .AsNoTracking()
             .Where(predicate)
@@ -85,7 +98,7 @@ public abstract class DatabaseRepository<TEntity, TType>(
         if (result == null)
             return null;
 
-        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _serviceProvider, cancellationToken);
+        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _context.ServiceProvider, cancellationToken);
 
         return result;
     }
@@ -98,42 +111,49 @@ public abstract class DatabaseRepository<TEntity, TType>(
     {
         var property = typeof(TEntity).GetProperty("Id", BindingFlags.Public | BindingFlags.Instance);
 
-        if (property is null || property.PropertyType != typeof(TType))
-            throw new DatabaseException($"Entity's Id property not found or type mismatched with {typeof(TType).Name}.");
+        if (property is null)
+            throw new DatabaseException("Entity's Id property not found.");
 
-        var id = (TType)property.GetValue(entity)!;
+        if (property.PropertyType != typeof(int) && property.PropertyType != typeof(Guid))
+            throw new DatabaseException($"Entity's Id property must be of type int or Guid but is {property.PropertyType.Name}.");
 
-        var existingEntity = await _context.Set<TEntity>().FindAsync(id, cancellationToken);
+        var id = property.GetValue(entity)!;
+        var existingEntity = await _context.DbContext
+            .Set<TEntity>()
+            .FindAsync(new object[] { id }, cancellationToken);
 
         if (existingEntity is null)
             return false;
 
-        _context.Entry(existingEntity).CurrentValues.SetValues(entity);
-        //_context.Set<T1>().Update(entity);
+        _context.DbContext.Entry(existingEntity).CurrentValues.SetValues(entity);
 
-        if (await _context.SaveChangesAsync(cancellationToken) == 0)
+        if (await _context.DbContext.SaveChangesAsync(cancellationToken) == 0)
             return false;
 
         return true;
     }
 
-    public async Task<bool> DeleteAsync(TType id, CancellationToken cancellationToken = default)
-    {
-        var entity = await _context
-            .Set<TEntity>()
-            .FindAsync(id, cancellationToken);
 
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var dbSet = _context.DbContext.Set<TEntity>();
+        var entity = await dbSet.FindAsync([id], cancellationToken);
         if (entity is null)
             return false;
 
-        _context
-            .Set<TEntity>()
-            .Remove(entity);
+        dbSet.Remove(entity);
+        return await _context.DbContext.SaveChangesAsync(cancellationToken) > 0;
+    }
 
-        if (await _context.SaveChangesAsync(cancellationToken) == 0)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var dbSet = _context.DbContext.Set<TEntity>();
+        var entity = await dbSet.FindAsync([id], cancellationToken);
+        if (entity is null)
             return false;
 
-        return true;
+        dbSet.Remove(entity);
+        return await _context.DbContext.SaveChangesAsync(cancellationToken) > 0;
     }
 
     public async Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
@@ -141,25 +161,18 @@ public abstract class DatabaseRepository<TEntity, TType>(
         if (entity is null)
             return false;
 
-        if (_context.Entry(entity).State == EntityState.Detached)
-            _context.Set<TEntity>().Attach(entity);
+        if (_context.DbContext.Entry(entity).State == EntityState.Detached)
+            _context.DbContext.Set<TEntity>().Attach(entity);
 
-        _context
-            .Set<TEntity>()
-            .Remove(entity);
-
-        if (await _context.SaveChangesAsync(cancellationToken) == 0)
-            return false;
-
-        return true;
+        _context.DbContext.Set<TEntity>().Remove(entity);
+        return await _context.DbContext.SaveChangesAsync(cancellationToken) > 0;
     }
 
-    public IDatabaseReadRepository<TEntity, TType> Extension(Expression<Func<TEntity, object?>> extension)
+
+    public IDatabaseReadRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension)
     {
-        var repository = (DatabaseRepository<TEntity, TType>)Activator.CreateInstance(this.GetType(), _context, _serviceProvider)!;
-
+        var repository = (DatabaseRepository<TEntity>)Activator.CreateInstance(this.GetType(), _context)!;
         repository.Extensions.Add(extension);
-
         return repository;
     }
 }

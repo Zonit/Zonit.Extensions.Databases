@@ -2,6 +2,6 @@
 
 namespace Zonit.Extensions.Databases.Examples.Repositories;
 
-public interface IBlogRepository : IDatabaseRepository<Blog, Guid>
+public interface IBlogRepository : IDatabaseRepository<Blog>
 {
 }
