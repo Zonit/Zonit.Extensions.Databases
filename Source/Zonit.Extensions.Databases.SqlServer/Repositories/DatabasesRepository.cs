@@ -9,7 +9,7 @@ public abstract class DatabasesRepository<TEntity>(
     ) : IDatabasesRepository<TEntity> 
     where TEntity : class
 {
-    public List<Expression<Func<TEntity, object?>>> Extensions { get; set; } = [];
+    public List<Expression<Func<TEntity, object?>>>? ExtensionsExpressions { get; set; }
     public List<Expression<Func<TEntity, object>>>? IncludeExpressions { get; set; }
     public Expression<Func<TEntity, bool>>? FilterExpression { get; set; }
     public Expression<Func<TEntity, object>>? OrderByColumnSelector { get; set; }
@@ -43,7 +43,7 @@ public abstract class DatabasesRepository<TEntity>(
         if (result is null || result.Count == 0)
             return null;
 
-        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _context.ServiceProvider, cancellationToken);
+        result = await ExtensionService.ApplyExtensionsAsync(result, ExtensionsExpressions, _context.ServiceProvider, cancellationToken);
 
         return result;
     }
@@ -73,7 +73,7 @@ public abstract class DatabasesRepository<TEntity>(
         if (result is null)
             return null;
 
-        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _context.ServiceProvider, cancellationToken);
+        result = await ExtensionService.ApplyExtensionsAsync(result, ExtensionsExpressions, _context.ServiceProvider, cancellationToken);
 
         return result;
     }
@@ -126,8 +126,8 @@ public abstract class DatabasesRepository<TEntity>(
     {
         var newRepo = (DatabasesRepository<TEntity>)Activator.CreateInstance(this.GetType(), _context)!;
 
-        newRepo.Extensions = new List<Expression<Func<TEntity, object?>>>(this.Extensions);
-        newRepo.IncludeExpressions = this.IncludeExpressions is not null ? new List<Expression<Func<TEntity, object>>>(this.IncludeExpressions) : null;
+        newRepo.ExtensionsExpressions = this.ExtensionsExpressions is not null ? [.. this.ExtensionsExpressions] : null;
+        newRepo.IncludeExpressions = this.IncludeExpressions is not null ? [.. this.IncludeExpressions] : null;
         newRepo.FilterExpression = this.FilterExpression;
         newRepo.OrderByColumnSelector = this.OrderByColumnSelector;
         newRepo.OrderByDescendingColumnSelector = this.OrderByDescendingColumnSelector;
@@ -144,7 +144,8 @@ public abstract class DatabasesRepository<TEntity>(
     public IDatabasesRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension)
     {
         var newRepo = Clone();
-        newRepo.Extensions.Add(extension);
+        newRepo.ExtensionsExpressions ??= [];
+        newRepo.ExtensionsExpressions.Add(extension);
         return newRepo;
     }
 

@@ -7,7 +7,7 @@ internal static class ExtensionService
 {
     public static async Task<TEntity> ApplyExtensionsAsync<TEntity>(
         TEntity entity,
-        IEnumerable<Expression<Func<TEntity, object?>>> extensions,
+        IEnumerable<Expression<Func<TEntity, object?>>>? extensions,
         IServiceProvider serviceProvider,
         CancellationToken cancellationToken = default)
         where TEntity : class
@@ -21,7 +21,7 @@ internal static class ExtensionService
 
     public static async Task<List<TEntity>> ApplyExtensionsAsync<TEntity>(
         List<TEntity> entities,
-        IEnumerable<Expression<Func<TEntity, object?>>> extensions,
+        IEnumerable<Expression<Func<TEntity, object?>>>? extensions,
         IServiceProvider serviceProvider,
         CancellationToken cancellationToken = default)
         where TEntity : class
