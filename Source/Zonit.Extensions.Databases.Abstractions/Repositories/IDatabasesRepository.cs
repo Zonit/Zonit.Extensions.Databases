@@ -8,6 +8,7 @@ namespace Zonit.Extensions.Databases;
 /// <typeparam name="TEntity">Model name</typeparam>
 public interface IDatabasesRepository<TEntity> : IDatabasesReadRepository<TEntity>
 {
+    IDatabasesRepository<TEntity> Query();
     IDatabasesRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension);
     IDatabasesRepository<TEntity> Skip(int skip);
     IDatabasesRepository<TEntity> Take(int take);

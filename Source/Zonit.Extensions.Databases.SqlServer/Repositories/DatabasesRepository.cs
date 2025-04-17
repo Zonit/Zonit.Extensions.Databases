@@ -138,6 +138,9 @@ public abstract class DatabasesRepository<TEntity>(
         return newRepo;
     }
 
+    public IDatabasesRepository<TEntity> Query()
+        => Clone();
+
     public IDatabasesRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension)
     {
         var newRepo = Clone();
@@ -157,6 +160,9 @@ public abstract class DatabasesRepository<TEntity>(
     public IDatabasesRepository<TEntity> OrderBy(Expression<Func<TEntity, object>> keySelector)
     {
         var newRepo = Clone();
+        if (newRepo.OrderByDescendingColumnSelector is not null)
+            throw new InvalidOperationException("Cannot set both OrderBy and OrderByDescending.");
+
         newRepo.OrderByColumnSelector = keySelector;
         return newRepo;
     }
@@ -164,6 +170,9 @@ public abstract class DatabasesRepository<TEntity>(
     public IDatabasesRepository<TEntity> OrderByDescending(Expression<Func<TEntity, object>> keySelector)
     {
         var newRepo = Clone();
+        if (newRepo.OrderByColumnSelector is not null)
+            throw new InvalidOperationException("Cannot set both OrderBy and OrderByDescending.");
+
         newRepo.OrderByDescendingColumnSelector = keySelector;
         return newRepo;
     }
