@@ -12,6 +12,8 @@ internal class BlogExtensionBackground(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await Task.Delay(1000, stoppingToken);
+
         // Create
         var createBlog = await _blogRepository.AddAsync(new Blog
         {
