@@ -223,7 +223,7 @@ IDatabaseReadRepository<TEntity> Extension(Expression<Func<TEntity, object?>> ex
 ### IDatabasesRepository<TEntity>
 
 ```cs
-IDatabasesRepository<TEntity> Query();
+IDatabasesRepository<TEntity> AsQuery();
 IDatabasesRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension);
 IDatabasesRepository<TEntity> Skip(int skip);
 IDatabasesRepository<TEntity> Take(int take);

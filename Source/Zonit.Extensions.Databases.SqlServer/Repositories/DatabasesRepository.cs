@@ -138,7 +138,7 @@ public abstract class DatabasesRepository<TEntity>(
         return newRepo;
     }
 
-    public IDatabasesRepository<TEntity> Query()
+    public IDatabasesRepository<TEntity> AsQuery()
         => Clone();
 
     public IDatabasesRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension)
