@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	  
-		<AssemblyVersion>0.1.11</AssemblyVersion>
+		<AssemblyVersion>0.1.12</AssemblyVersion>
 		<FileVersion>$(AssemblyVersion)</FileVersion>
 		<Version>$(AssemblyVersion)</Version>
 		<Authors>Zonit</Authors>

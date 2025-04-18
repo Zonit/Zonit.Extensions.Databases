@@ -72,7 +72,7 @@ internal static class ExtensionService
                 continue;
 
             dynamic ext = extensionService;
-            var loadedValue = await ext.InicjalizeAsync(idValue, cancellationToken);
+            var loadedValue = await ext.InitializeAsync(idValue, cancellationToken);
             propertyInfo.SetValue(entity, loadedValue);
         }
     }

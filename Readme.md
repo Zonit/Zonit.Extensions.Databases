@@ -47,7 +47,7 @@ namespace Zonit.Extensions.Databases.Examples.Extensions;
 
 public class UserExtension : IDatabaseExtension<UserModel>
 {
-    public async Task<UserModel> InicjalizeAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<UserModel> InitializeAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         // EXAMPLE: Here we would call a REST API or any other source.
         var model = new UserModel { 
