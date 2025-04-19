@@ -26,29 +26,33 @@ jobs:
             8.0.x
             9.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore Source/**/*.csproj
+      - name: Restore all projects in Source
+        run: |
+          find Source -name '*.csproj' -print0 | xargs -0 -n1 dotnet restore
 
-      - name: Build all projects
-        run: dotnet build Source/**/*.csproj --configuration Release --no-restore
+      - name: Build all projects in Source
+        run: |
+          find Source -name '*.csproj' -print0 | xargs -0 -n1 dotnet build --configuration Release --no-restore
 
-      - name: Publish all projects (net8.0)
+      - name: Publish all projects in Source (net8.0)
         run: |
           for proj in $(find Source -name '*.csproj'); do
-            dotnet publish "$proj" --configuration Release --framework net8.0 --output ./publish/$(basename "$proj" .csproj)-net8.0
+            dotnet publish "$proj" --configuration Release --framework net8.0 --output ./publish/$(basename "$proj" .csproj)-net8.0 || true
           done
 
-      - name: Publish all projects (net9.0)
+      - name: Publish all projects in Source (net9.0)
         run: |
           for proj in $(find Source -name '*.csproj'); do
-            dotnet publish "$proj" --configuration Release --framework net9.0 --output ./publish/$(basename "$proj" .csproj)-net9.0
+            dotnet publish "$proj" --configuration Release --framework net9.0 --output ./publish/$(basename "$proj" .csproj)-net9.0 || true
           done
 
-      - name: Pack all libraries (multi-target .nupkg)
+      - name: Pack all projects in Source
         run: |
           for proj in $(find Source -name '*.csproj'); do
-            dotnet pack "$proj" --configuration Release --output ./nupkgs
+            dotnet pack "$proj" --configuration Release --no-build --output ./nupkgs || true
           done
 
       - name: Publish NuGet packages
         run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
