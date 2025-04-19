@@ -26,20 +26,32 @@ jobs:
           8.0.x
           9.0.x
 
+    - name: Find all projects in Source
+      id: find-projects
+      run: |
+        echo "projects=$(find Source -name '*.csproj' -print0 | xargs -0)" >> $GITHUB_OUTPUT
+
     - name: Restore dependencies
-      run: dotnet restore
+      run: |
+        for proj in ${{ steps.find-projects.outputs.projects }}; do
+          dotnet restore "$proj"
+        done
 
     - name: Build, publish, and pack (.NET 8)
       run: |
-        dotnet build --configuration Release --framework net8.0
-        dotnet publish --configuration Release --framework net8.0 --output ./publish/net8.0
-        dotnet pack --configuration Release --framework net8.0 --output ./nupkgs
+        for proj in ${{ steps.find-projects.outputs.projects }}; do
+          dotnet build "$proj" --configuration Release --framework net8.0
+          dotnet publish "$proj" --configuration Release --framework net8.0 --output ./publish/net8.0
+          dotnet pack "$proj" --configuration Release --framework net8.0 --output ./nupkgs
+        done
 
     - name: Build, publish, and pack (.NET 9)
       run: |
-        dotnet build --configuration Release --framework net9.0
-        dotnet publish --configuration Release --framework net9.0 --output ./publish/net9.0
-        dotnet pack --configuration Release --framework net9.0 --output ./nupkgs
+        for proj in ${{ steps.find-projects.outputs.projects }}; do
+          dotnet build "$proj" --configuration Release --framework net9.0
+          dotnet publish "$proj" --configuration Release --framework net9.0 --output ./publish/net9.0
+          dotnet pack "$proj" --configuration Release --framework net9.0 --output ./nupkgs
+        done
 
     - name: Publish NuGet packages
       run: |
