@@ -7,8 +7,9 @@ on:
     paths:
       - 'Source/**/*.csproj'
       - 'Source/**/*.cs'
-      - 'Directory.Packages.props' 
+      - 'Source/Directory.Packages.props' 
       - '.github/workflows/**'
+  workflow_dispatch:
 
 jobs:
   publish:
