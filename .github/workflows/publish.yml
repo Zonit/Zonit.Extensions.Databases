@@ -1,6 +1,7 @@
 ﻿name: Publish NuGet Packages
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -9,39 +10,32 @@ on:
       - 'Source/**/*.cs'
       - 'Source/Directory.Packages.props' 
       - '.github/workflows/**'
-  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Możesz zmienić na windows-latest, jeśli wolisz
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
-    - name: Set up .NET SDK (8.0)
-      uses: actions/setup-dotnet@v2
+    - name: Setup .NET 8 and 9 SDKs
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'  # Ustawienie .NET 8.0 SDK
+        dotnet-version: |
+          8.0.x
+          9.0.x
 
-    - name: Restore dependencies for .NET 8.0
+    - name: Restore dependencies
       run: dotnet restore
 
-    - name: Build and Publish for .NET 8.0
+    - name: Build, publish, and pack (.NET 8)
       run: |
         dotnet build --configuration Release --framework net8.0
         dotnet publish --configuration Release --framework net8.0 --output ./publish/net8.0
         dotnet pack --configuration Release --framework net8.0 --output ./nupkgs
 
-    - name: Set up .NET SDK (9.0)
-      uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: '9.0.x'  # Ustawienie .NET 9.0 SDK
-
-    - name: Restore dependencies for .NET 9.0
-      run: dotnet restore
-
-    - name: Build and Publish for .NET 9.0
+    - name: Build, publish, and pack (.NET 9)
       run: |
         dotnet build --configuration Release --framework net9.0
         dotnet publish --configuration Release --framework net9.0 --output ./publish/net9.0
