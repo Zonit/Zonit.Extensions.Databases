@@ -16,43 +16,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup .NET 8 and 9 SDKs
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: |
-          8.0.x
-          9.0.x
+      - name: Setup .NET 8 and 9 SDKs
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
 
-    - name: Find all projects in Source
-      id: find-projects
-      run: |
-        echo "projects=$(find Source -name '*.csproj' -print0 | xargs -0)" >> $GITHUB_OUTPUT
+      - name: Restore dependencies
+        run: dotnet restore Source/**/*.csproj
 
-    - name: Restore dependencies
-      run: |
-        for proj in ${{ steps.find-projects.outputs.projects }}; do
-          dotnet restore "$proj"
-        done
+      - name: Build all projects
+        run: dotnet build Source/**/*.csproj --configuration Release --no-restore
 
-    - name: Build, publish, and pack (.NET 8)
-      run: |
-        for proj in ${{ steps.find-projects.outputs.projects }}; do
-          dotnet build "$proj" --configuration Release --framework net8.0
-          dotnet publish "$proj" --configuration Release --framework net8.0 --output ./publish/net8.0
-          dotnet pack "$proj" --configuration Release -p:TargetFramework=net8.0 --output ./nupkgs
-        done
+      - name: Publish all projects (net8.0)
+        run: |
+          for proj in $(find Source -name '*.csproj'); do
+            dotnet publish "$proj" --configuration Release --framework net8.0 --output ./publish/$(basename "$proj" .csproj)-net8.0
+          done
 
-    - name: Build, publish, and pack (.NET 9)
-      run: |
-        for proj in ${{ steps.find-projects.outputs.projects }}; do
-          dotnet build "$proj" --configuration Release --framework net9.0
-          dotnet publish "$proj" --configuration Release --framework net9.0 --output ./publish/net9.0
-          dotnet pack "$proj" --configuration Release -p:TargetFramework=net9.0 --output ./nupkgs
-        done
+      - name: Publish all projects (net9.0)
+        run: |
+          for proj in $(find Source -name '*.csproj'); do
+            dotnet publish "$proj" --configuration Release --framework net9.0 --output ./publish/$(basename "$proj" .csproj)-net9.0
+          done
 
-    - name: Publish NuGet packages
-      run: |
-        dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+      - name: Pack all libraries (multi-target .nupkg)
+        run: |
+          for proj in $(find Source -name '*.csproj'); do
+            dotnet pack "$proj" --configuration Release --output ./nupkgs
+          done
+
+      - name: Publish NuGet packages
+        run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
