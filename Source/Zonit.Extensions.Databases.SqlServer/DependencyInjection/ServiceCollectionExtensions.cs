@@ -6,6 +6,10 @@ using Zonit.Extensions.Databases.SqlServer.Backgrounds;
 using Zonit.Extensions.Databases;
 using Zonit.Extensions.Databases.SqlServer;
 
+#if !DEBUG
+using Microsoft.Extensions.Logging;
+#endif
+
 namespace Zonit.Extensions;
 
 public static class ServiceCollectionExtensions
