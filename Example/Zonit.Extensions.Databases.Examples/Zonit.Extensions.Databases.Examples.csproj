@@ -9,6 +9,9 @@
         <StartupObject>Zonit.Extensions.Databases.Examples.Program</StartupObject>
     </PropertyGroup>
   <ItemGroup>
+    <Content Include="appsettings.release.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
