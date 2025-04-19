@@ -12,32 +12,41 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest  # Możesz zmienić na windows-latest, jeśli wolisz
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Setup .NET
+    - name: Set up .NET SDK (8.0)
       uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '8.0.x'  # Ustawienie .NET 8.0 SDK
 
-    - name: Restore dependencies
+    - name: Restore dependencies for .NET 8.0
       run: dotnet restore
 
-    - name: Build and pack all projects (excluding Examples)
+    - name: Build and Publish for .NET 8.0
       run: |
-        mkdir -p nupkgs
-        for proj in $(find Source -name '*.csproj' ! -path '*Examples*'); do
-          echo "📦 Packing $proj"
-          dotnet pack "$proj" --configuration Release --output ./nupkgs
-        done
+        dotnet build --configuration Release --framework net8.0
+        dotnet publish --configuration Release --framework net8.0 --output ./publish/net8.0
+        dotnet pack --configuration Release --framework net8.0 --output ./nupkgs
 
-    - name: Push to NuGet
+    - name: Set up .NET SDK (9.0)
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '9.0.x'  # Ustawienie .NET 9.0 SDK
+
+    - name: Restore dependencies for .NET 9.0
+      run: dotnet restore
+
+    - name: Build and Publish for .NET 9.0
+      run: |
+        dotnet build --configuration Release --framework net9.0
+        dotnet publish --configuration Release --framework net9.0 --output ./publish/net9.0
+        dotnet pack --configuration Release --framework net9.0 --output ./nupkgs
+
+    - name: Publish NuGet packages
       run: |
         dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-        dotnet nuget push ./nupkgs/*.snupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-      env:
-        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
