@@ -10,7 +10,8 @@ namespace Zonit.Extensions.Databases;
 /// <typeparam name="TType">ID Type</typeparam>
 public interface IDatabaseRepository<TEntity> : IDatabaseReadRepository<TEntity>
 {
-    IDatabaseReadRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension);
+    IDatabaseRepository<TEntity> Include(Expression<Func<TEntity, object>> includeExpression);
+    IDatabaseRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension);
 
     Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default);
     Task<TDto> AddAsync<TDto>(TEntity entity, CancellationToken cancellationToken = default);

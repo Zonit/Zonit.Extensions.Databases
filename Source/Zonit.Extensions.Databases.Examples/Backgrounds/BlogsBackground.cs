@@ -12,6 +12,8 @@ internal class BlogsBackground(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await Task.Delay(2000, stoppingToken);
+
         // Update range
         var count = await _blogsRepository.Where(x => x.Created > DateTime.Now.AddYears(-1)).UpdateRangeAsync(x => {
             x.Title = "New all title";

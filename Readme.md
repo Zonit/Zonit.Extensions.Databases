@@ -199,6 +199,9 @@ var blogsDto = await repository.GetAsync<BlogDto>();
 ### IDatabaseRepository<TEntity, TType>
 
 ```cs
+IDatabaseRepository<TEntity> Include(Expression<Func<TEntity, object>> includeExpression);
+IDatabaseRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension);
+
 Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default);
 Task<TDto> AddAsync<TDto>(TEntity entity, CancellationToken cancellationToken = default);
 
@@ -215,9 +218,6 @@ Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = def
 
 Task<bool> DeleteAsync(TType entity, CancellationToken cancellationToken = default);
 Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
-
-IDatabaseReadRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension);
-
 ```
 
 ### IDatabasesRepository<TEntity>
@@ -225,9 +225,9 @@ IDatabaseReadRepository<TEntity> Extension(Expression<Func<TEntity, object?>> ex
 ```cs
 IDatabasesRepository<TEntity> AsQuery();
 IDatabasesRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension);
+IDatabasesRepository<TEntity> Include(Expression<Func<TEntity, object>> includeExpression);
 IDatabasesRepository<TEntity> Skip(int skip);
 IDatabasesRepository<TEntity> Take(int take);
-IDatabasesRepository<TEntity> Include(Expression<Func<TEntity, object>> includeExpression);
 IDatabasesRepository<TEntity> Where(Expression<Func<TEntity, bool>> predicate);
 IDatabasesRepository<TEntity> OrderBy(Expression<Func<TEntity, object>> keySelector);
 IDatabasesRepository<TEntity> OrderByDescending(Expression<Func<TEntity, object>> keySelector);

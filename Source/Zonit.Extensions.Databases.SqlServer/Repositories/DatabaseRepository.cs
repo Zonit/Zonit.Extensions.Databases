@@ -12,7 +12,8 @@ public abstract class DatabaseRepository<TEntity>(
     ) : IDatabaseRepository<TEntity> 
     where TEntity : class
 {
-    public List<Expression<Func<TEntity, object?>>> Extensions { get; set; } = [];
+    public List<Expression<Func<TEntity, object?>>>? ExtensionsExpressions { get; set; }
+    public List<Expression<Func<TEntity, object>>>? IncludeExpressions { get; set; }
 
     public async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
@@ -49,7 +50,7 @@ public abstract class DatabaseRepository<TEntity>(
         if (result is null)
             return null;
 
-        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _context.ServiceProvider, cancellationToken)
+        result = await ExtensionService.ApplyExtensionsAsync(result, ExtensionsExpressions, _context.ServiceProvider, cancellationToken)
             .ConfigureAwait(false);
 
         return result;
@@ -79,7 +80,7 @@ public abstract class DatabaseRepository<TEntity>(
         if (result == null)
             return null;
 
-        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _context.ServiceProvider, cancellationToken);
+        result = await ExtensionService.ApplyExtensionsAsync(result, ExtensionsExpressions, _context.ServiceProvider, cancellationToken);
 
         return result;
     }
@@ -98,7 +99,7 @@ public abstract class DatabaseRepository<TEntity>(
         if (result == null)
             return null;
 
-        result = await ExtensionService.ApplyExtensionsAsync(result, Extensions, _context.ServiceProvider, cancellationToken);
+        result = await ExtensionService.ApplyExtensionsAsync(result, ExtensionsExpressions, _context.ServiceProvider, cancellationToken);
 
         return result;
     }
@@ -168,11 +169,29 @@ public abstract class DatabaseRepository<TEntity>(
         return await _context.DbContext.SaveChangesAsync(cancellationToken) > 0;
     }
 
-
-    public IDatabaseReadRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension)
+    public IDatabaseRepository<TEntity> Include(Expression<Func<TEntity, object>> includeExpression)
     {
-        var repository = (DatabaseRepository<TEntity>)Activator.CreateInstance(this.GetType(), _context)!;
-        repository.Extensions.Add(extension);
-        return repository;
+        var newRepo = Clone();
+        newRepo.IncludeExpressions ??= [];
+        newRepo.IncludeExpressions.Add(includeExpression);
+        return newRepo;
+    }
+
+    public IDatabaseRepository<TEntity> Extension(Expression<Func<TEntity, object?>> extension)
+    {
+        var newRepo = Clone();
+        newRepo.ExtensionsExpressions ??= [];
+        newRepo.ExtensionsExpressions.Add(extension);
+        return newRepo;
+    }
+
+    private DatabaseRepository<TEntity> Clone()
+    {
+        var newRepo = (DatabaseRepository<TEntity>)Activator.CreateInstance(this.GetType(), _context)!;
+
+        newRepo.ExtensionsExpressions = this.ExtensionsExpressions is not null ? [.. this.ExtensionsExpressions] : null;
+        newRepo.IncludeExpressions = this.IncludeExpressions is not null ? [.. this.IncludeExpressions] : null;
+
+        return newRepo;
     }
 }
