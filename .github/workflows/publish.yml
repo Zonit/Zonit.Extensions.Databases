@@ -1,0 +1,41 @@
+﻿name: Publish NuGet Packages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Source/**/*.csproj'
+      - 'Source/**/*.cs'
+      - '.github/workflows/**'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build and pack all projects (excluding Examples)
+      run: |
+        mkdir -p nupkgs
+        for proj in $(find Source -name '*.csproj' ! -path '*Examples*'); do
+          echo "📦 Packing $proj"
+          dotnet pack "$proj" --configuration Release --output ./nupkgs
+        done
+
+    - name: Push to NuGet
+      run: |
+        dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        dotnet nuget push ./nupkgs/*.snupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
