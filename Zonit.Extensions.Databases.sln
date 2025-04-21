@@ -20,11 +20,15 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Example", "Example", "{BDEAF804-BF54-4249-B593-9E2E3C8AD126}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
-	ProjectSection(SolutionItems) = preProject
-		.github\workflows\publish.yml = .github\workflows\publish.yml
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zonit.Extensions.Databases.Examples", "Example\Zonit.Extensions.Databases.Examples\Zonit.Extensions.Databases.Examples.csproj", "{25F7368D-FC18-6B91-C62D-94F6C14F1915}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{06AB1338-8067-4C8B-98FA-B45203690972}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\bump-version.yml = .github\workflows\bump-version.yml
+		.github\workflows\publish.yml = .github\workflows\publish.yml
+		.github\workflows\update-packages.yml = .github\workflows\update-packages.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +57,7 @@ Global
 		{05EB011B-1E37-4448-81E2-031E653DCCB1} = {D6745891-BA87-4268-B907-D1F3828DDC79}
 		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {40342464-2276-461E-B5A4-87DE0C177D23}
 		{25F7368D-FC18-6B91-C62D-94F6C14F1915} = {BDEAF804-BF54-4249-B593-9E2E3C8AD126}
+		{06AB1338-8067-4C8B-98FA-B45203690972} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {27326616-979B-48CA-B4C1-BDC38D497504}

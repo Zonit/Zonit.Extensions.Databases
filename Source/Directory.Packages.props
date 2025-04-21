@@ -1,5 +1,6 @@
 <Project>
 	<PropertyGroup>
+		<EnableCentralPackageManagement>true</EnableCentralPackageManagement>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
