@@ -1,17 +1,17 @@
 ﻿namespace Zonit.Extensions.Databases;
 
 /// <summary>
-/// 
+/// Interfejs do repozytoriów wielu rekordów.
 /// </summary>
-/// <typeparam name="TEntity">Model name</typeparam>
-public interface IDatabasesReadRepository<TEntity>
+/// <typeparam name="TEntity"></typeparam>
+public interface IDatabaseMultipleRepository<TEntity>
 {
     /// <summary>
     /// Returns a list of available results 
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IReadOnlyCollection<TEntity>?> GetAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyCollection<TEntity>?> GetListAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns a list of available results by changing them to DTOs
@@ -19,7 +19,7 @@ public interface IDatabasesReadRepository<TEntity>
     /// <typeparam name="TDto"></typeparam>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IReadOnlyCollection<TDto>?> GetAsync<TDto>(CancellationToken cancellationToken = default);
+    Task<IReadOnlyCollection<TDto>?> GetListAsync<TDto>(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns a single result

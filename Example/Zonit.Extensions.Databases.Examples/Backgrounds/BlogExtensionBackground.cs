@@ -1,8 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Zonit.Extensions.Databases.Examples.Entities;
 using Zonit.Extensions.Databases.Examples.Repositories;
 
@@ -23,14 +20,14 @@ internal class BlogExtensionBackground(
             Title = "Hello World",
             Content = "Example content",
             UserId = Guid.NewGuid()
-        });
+        }, stoppingToken);
 
         _logger.LogInformation("Create: {Id} {Title} {Content} {Created}", createBlog.Id, createBlog.Title, createBlog.Content, createBlog.Created);
 
         // Read
         var read = await _blogRepository
             .Extension(x => x.User)
-            .GetFirstAsync(x => x.Id == createBlog.Id);
+            .GetByIdAsync(createBlog.Id, stoppingToken);
 
         if (read is not null)
         {
@@ -43,7 +40,9 @@ internal class BlogExtensionBackground(
 
         // Read
         var read2 = await _blogRepository
-            .GetFirstAsync(x => x.Id == createBlog.Id);
+            .Extension(x => x.User)
+            .Where(x => x.Id != createBlog.Id)
+            .GetAsync(stoppingToken);
 
         if (read2 is not null)
         {

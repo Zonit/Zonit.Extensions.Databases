@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Threading;
-using System.Threading.Tasks;
 using Zonit.Extensions.Databases.Examples.Dto;
 using Zonit.Extensions.Databases.Examples.Entities;
 using Zonit.Extensions.Databases.Examples.Repositories;
@@ -20,12 +18,12 @@ internal class BlogBackground(
         {
             Title = "Hello World",
             Content = "Example content"
-        });
+        }, stoppingToken);
 
         _logger.LogInformation("Create: {Id} {Title} {Content} {Created}", createBlog.Id, createBlog.Title, createBlog.Content, createBlog.Created);
 
         // Read
-        var read = await _blogRepository.GetFirstAsync(x => x.Title == "Hello World");
+        var read = await _blogRepository.Where(x => x.Title == "Hello World").GetFirstAsync(stoppingToken);
 
         if (read is not null)
             _logger.LogInformation("Read: {Id} {Title} {Content} {Created}", read.Id, read.Title, read.Content, read.Created);
@@ -33,7 +31,7 @@ internal class BlogBackground(
             _logger.LogInformation("Blog not found");
 
         // Dto Read
-        var dto = await _blogRepository.GetFirstAsync<BlogDto>(x => x.Title == "Hello World");
+        var dto = await _blogRepository.Where(x => x.Title == "Hello World").GetFirstAsync<BlogDto>(stoppingToken);
 
         if (dto is not null)
             _logger.LogInformation("Dto Read: {Id} {Title} {Content} {Created}", dto.Id, dto.Title, dto.Content, dto.Created);
@@ -44,7 +42,7 @@ internal class BlogBackground(
         if (read is not null)
         {
             read.Title = "New Title";
-            var update = await _blogRepository.UpdateAsync(read);
+            var update = await _blogRepository.UpdateAsync(read, stoppingToken);
 
             if(update is true)
                 _logger.LogInformation("Blog updated");
@@ -53,7 +51,7 @@ internal class BlogBackground(
         }
 
         // Delete
-        var delete = await _blogRepository.DeleteAsync(createBlog);
+        var delete = await _blogRepository.DeleteAsync(createBlog, stoppingToken);
 
         if(delete is true)
             _logger.LogInformation("Blog deleted");
