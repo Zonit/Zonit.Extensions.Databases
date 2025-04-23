@@ -20,7 +20,7 @@ public abstract class DatabasesRepository<TEntity>(
 
     public async Task<IReadOnlyCollection<TEntity>?> GetAsync(CancellationToken cancellationToken = default)
     {
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entitie = context.Set<TEntity>()
             .AsSplitQuery()
@@ -50,7 +50,7 @@ public abstract class DatabasesRepository<TEntity>(
 
     public async Task<TEntity?> GetFirstAsync(CancellationToken cancellationToken = default)
     {
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entitie = context.Set<TEntity>()
             .AsSplitQuery()
@@ -80,7 +80,7 @@ public abstract class DatabasesRepository<TEntity>(
 
     public async Task<int?> UpdateRangeAsync(Action<TEntity> updateAction, CancellationToken cancellationToken = default)
     {
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entitie = context.Set<TEntity>()
             .AsSplitQuery()
@@ -111,7 +111,7 @@ public abstract class DatabasesRepository<TEntity>(
 
     public async Task<int> GetCountAsync(CancellationToken cancellationToken = default)
     {
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entitie = context.Set<TEntity>()
             .AsNoTracking();

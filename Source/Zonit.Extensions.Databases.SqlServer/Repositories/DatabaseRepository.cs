@@ -39,7 +39,7 @@ public abstract class DatabaseRepository<TEntity>(
         if (entity is null)
             throw new InvalidOperationException($"The {nameof(entity)} parameter cannot be null.");
 
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         await context.Set<TEntity>()
             .AddAsync(entity, cancellationToken);
@@ -58,7 +58,7 @@ public abstract class DatabaseRepository<TEntity>(
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var dbSet = context.Set<TEntity>();
         var entity = await dbSet.FindAsync([id], cancellationToken);
@@ -72,7 +72,7 @@ public abstract class DatabaseRepository<TEntity>(
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var dbSet = context.Set<TEntity>();
         var entity = await dbSet.FindAsync([id], cancellationToken);
@@ -89,7 +89,7 @@ public abstract class DatabaseRepository<TEntity>(
         if (entity is null)
             return false;
 
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         if (context.Entry(entity).State == EntityState.Detached)
             context.Set<TEntity>().Attach(entity);
@@ -114,7 +114,7 @@ public abstract class DatabaseRepository<TEntity>(
 
     public async Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entity = await context.Set<TEntity>().FindAsync([id], cancellationToken);
 
@@ -138,7 +138,7 @@ public abstract class DatabaseRepository<TEntity>(
 
     public async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entity = await context.Set<TEntity>().FindAsync([id], cancellationToken);
 
@@ -162,7 +162,7 @@ public abstract class DatabaseRepository<TEntity>(
 
     public async Task<int> GetCountAsync(CancellationToken cancellationToken = default)
     {
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entities = context.Set<TEntity>()
             .AsNoTracking();
@@ -175,7 +175,7 @@ public abstract class DatabaseRepository<TEntity>(
 
     public async Task<TEntity?> GetFirstAsync(CancellationToken cancellationToken = default)
     {
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entities = context.Set<TEntity>()
             .AsSplitQuery()
@@ -208,7 +208,7 @@ public abstract class DatabaseRepository<TEntity>(
 
     public async Task<IReadOnlyCollection<TEntity>?> GetListAsync(CancellationToken cancellationToken = default)
     {
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entities = context.Set<TEntity>()
             .AsSplitQuery()
@@ -293,7 +293,7 @@ public abstract class DatabaseRepository<TEntity>(
         if (entity is null)
             return false;
 
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         context.Entry(entity).State = EntityState.Modified;
 
@@ -302,7 +302,7 @@ public abstract class DatabaseRepository<TEntity>(
 
     public async Task<int?> UpdateRangeAsync(Action<TEntity> updateAction, CancellationToken cancellationToken = default)
     {
-        using var context = await _context.DbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entities = context.Set<TEntity>()
             .AsSplitQuery()

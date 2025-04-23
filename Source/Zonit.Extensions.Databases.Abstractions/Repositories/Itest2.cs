@@ -155,27 +155,27 @@ namespace Zonit.Extensions.Databases.Abstractions.Repositories
     public class Test123
     {
 
-        public async Task Test123123()
-        {
-            IDatabaseRepository<DatabaseOptions> test = null;
+        //public async Task Test123123()
+        //{
+        //    IDatabaseRepository<DatabaseOptions> test = null;
 
-            var dupa = test.Include(x => x.Parameters).Select(x => x.Name).Extension(x => x.Parameters).GetAsync();
+        //    var dupa = test.Include(x => x.Parameters).Select(x => x.Name).Extension(x => x.Parameters).GetAsync();
 
-            var dupa2 = test
-                .Where(x => x.Parameters == "")
-                .Skip(1)
-                .Take(2)
-                .OrderBy(x => x.Parameters)
-                .GetListAsync();
+        //    var dupa2 = test
+        //        .Where(x => x.Parameters == "")
+        //        .Skip(1)
+        //        .Take(2)
+        //        .OrderBy(x => x.Parameters)
+        //        .GetListAsync();
 
-            var dupa3 = test
-                .Include(x => x.Parameters)
-                .Where(x => x.Parameters == "dupa")
-                .UpdateAsync(new DatabaseOptions(), CancellationToken.None);
+        //    var dupa3 = test
+        //        .Include(x => x.Parameters)
+        //        .Where(x => x.Parameters == "dupa")
+        //        .UpdateAsync(new DatabaseOptions(), CancellationToken.None);
 
-            var dupaaaa = test.Where(x => x.Raw == "").OrderBy(x => x.User).GetListAsync();
+        //    var dupaaaa = test.Where(x => x.Raw == "").OrderBy(x => x.User).GetListAsync();
 
-        }
+        //}
     }
 }
 

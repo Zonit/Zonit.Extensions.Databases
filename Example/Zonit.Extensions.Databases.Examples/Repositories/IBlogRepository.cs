@@ -4,4 +4,5 @@ namespace Zonit.Extensions.Databases.Examples.Repositories;
 
 public interface IBlogRepository : IDatabaseRepository<Blog>
 {
+    Task GetCustomAsync();
 }

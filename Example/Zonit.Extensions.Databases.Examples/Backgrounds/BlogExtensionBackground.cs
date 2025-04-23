@@ -52,5 +52,7 @@ internal class BlogExtensionBackground(
         else
             _logger.LogInformation("Blog not found");
 
+
+        await _blogRepository.GetCustomAsync();
     }
 }
