@@ -136,6 +136,9 @@ public abstract class DatabaseRepository<TEntity>(
         return entity;
     }
 
+    public async Task<TDto?> GetByIdAsync<TDto>(int id, CancellationToken cancellationToken = default)
+        => MappingService.Dto<TDto>(await this.GetByIdAsync(id, cancellationToken));
+
     public async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
@@ -159,6 +162,9 @@ public abstract class DatabaseRepository<TEntity>(
 
         return entity;
     }
+
+    public async Task<TDto?> GetByIdAsync<TDto>(Guid id, CancellationToken cancellationToken = default)
+        => MappingService.Dto<TDto>(await this.GetByIdAsync(id, cancellationToken));
 
     public async Task<int> GetCountAsync(CancellationToken cancellationToken = default)
     {
@@ -247,23 +253,23 @@ public abstract class DatabaseRepository<TEntity>(
         return newRepo;
     }
 
-    public IDatabaseMultipleRepository<TEntity> OrderBy<TKey>(Expression<Func<TEntity, TKey>> keySelector)
+    public IDatabaseMultipleRepository<TEntity> OrderBy(Expression<Func<TEntity, object>> keySelector)
     {
         var newRepo = Clone();
         if (newRepo.OrderByDescendingColumnSelector is not null)
             throw new InvalidOperationException("Cannot set both OrderBy and OrderByDescending.");
 
-        newRepo.OrderByColumnSelector = keySelector as Expression<Func<TEntity, object>>;
+        newRepo.OrderByColumnSelector = keySelector;
         return newRepo;
     }
 
-    public IDatabaseMultipleRepository<TEntity> OrderByDescending<TKey>(Expression<Func<TEntity, TKey>> keySelector)
+    public IDatabaseMultipleRepository<TEntity> OrderByDescending(Expression<Func<TEntity, object>> keySelector)
     {
         var newRepo = Clone();
         if (newRepo.OrderByColumnSelector is not null)
             throw new InvalidOperationException("Cannot set both OrderBy and OrderByDescending.");
 
-        newRepo.OrderByDescendingColumnSelector = keySelector as Expression<Func<TEntity, object>>;
+        newRepo.OrderByDescendingColumnSelector = keySelector;
         return newRepo;
     }
 

@@ -6,6 +6,7 @@ namespace Zonit.Extensions.Databases;
 /// 
 /// </summary>
 /// <typeparam name="TEntity">Model name</typeparam>
+[Obsolete("IDatabasesRepository is deprecated and may be phased out in the future. Use the new IDatabaseRepository solution")]
 public interface IDatabasesRepository<TEntity>
 {
     IDatabasesRepository<TEntity> AsQuery();

@@ -55,7 +55,6 @@ internal class Program
         builder.Services.AddHostedService<DatabaseInitialize>();
 
         builder.Services.AddTransient<IBlogRepository, BlogRepository>();
-        builder.Services.AddTransient<IBlogsRepository, BlogsRepository>();
 
         builder.Services.AddHostedService<BlogBackground>();
         builder.Services.AddHostedService<BlogsBackground>();

@@ -6,7 +6,7 @@ using Zonit.Extensions.Databases.Examples.Repositories;
 namespace Zonit.Extensions.Databases.Examples.Backgrounds;
 
 internal class BlogsBackground(
-    IBlogsRepository _blogsRepository,
+    IBlogRepository _blogsRepository,
     ILogger<BlogsBackground> _logger
     ) : BackgroundService
 {
@@ -27,7 +27,7 @@ internal class BlogsBackground(
         // Read
         var blogs = await _blogsRepository
             .Extension(x => x.User)
-            .GetAsync<BlogDto>(stoppingToken);
+            .GetListAsync<BlogDto>(stoppingToken);
 
         if(blogs is not null)
             foreach (var blog in blogs)
