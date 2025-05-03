@@ -2,5 +2,5 @@
 
 public interface IDatabaseExtension<TExtension> where TExtension : class
 {
-    Task<TExtension> InitializeAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<TExtension?> InitializeAsync(Guid id, CancellationToken cancellationToken = default);
 }
