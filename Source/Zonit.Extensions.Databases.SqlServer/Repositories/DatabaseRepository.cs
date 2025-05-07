@@ -106,6 +106,12 @@ public abstract class DatabaseRepository<TEntity>(
         return newRepo;
     }
 
+    public async Task<bool> AnyAsync(CancellationToken cancellationToken = default)
+    {
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        return await context.Set<TEntity>().AnyAsync(cancellationToken);
+    }
+
     public async Task<TEntity?> GetAsync(CancellationToken cancellationToken = default)
         => await GetFirstAsync(cancellationToken);
 
@@ -292,6 +298,32 @@ public abstract class DatabaseRepository<TEntity>(
         var newRepo = Clone();
         newRepo.TakeCount = count;
         return newRepo;
+    }
+
+    public async Task<bool> UpdateAsync(int id, Action<TEntity> updateAction, CancellationToken cancellationToken = default)
+    {
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        var entity = await context.Set<TEntity>().FindAsync([id], cancellationToken);
+        if (entity is null)
+            return false;
+
+        updateAction(entity);
+
+        return await context.SaveChangesAsync(cancellationToken) > 0;
+    }
+
+    public async Task<bool> UpdateAsync(Guid id, Action<TEntity> updateAction, CancellationToken cancellationToken = default)
+    {
+        using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        var entity = await context.Set<TEntity>().FindAsync([id], cancellationToken);
+        if (entity is null)
+            return false;
+
+        updateAction(entity);
+
+        return await context.SaveChangesAsync(cancellationToken) > 0;
     }
 
     public async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)

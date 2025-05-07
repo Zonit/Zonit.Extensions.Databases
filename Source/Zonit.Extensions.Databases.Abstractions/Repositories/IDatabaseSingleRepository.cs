@@ -12,4 +12,6 @@ public interface IDatabaseSingleRepository<TEntity>
     Task<TDto?> GetByIdAsync<TDto>(Guid id, CancellationToken cancellationToken = default);
     Task<TEntity?> GetAsync(CancellationToken cancellationToken = default);
     Task<TDto?> GetAsync<TDto>(CancellationToken cancellationToken = default);
+
+    Task<bool> AnyAsync(CancellationToken cancellationToken = default);
 }
