@@ -25,6 +25,12 @@ jobs:
           ref: master
           fetch-depth: 0
 
+      - name: Install PowerShell
+        uses: PowerShell/PowerShell@v1
+        with:
+          pwsh-version: 'latest'
+        # Alternatywnie: sudo apt-get install -y powershell
+
       - name: Setup .NET 8 and 9 SDKs
         uses: actions/setup-dotnet@v4
         with:
@@ -32,22 +38,128 @@ jobs:
             8.0.x
             9.0.x
 
-      - name: Install dotnet-outdated tool
-        run: dotnet tool install --global dotnet-outdated-tool
-
-      - name: Find solution file
-        id: find-sln
+      - name: Save update-packages.ps1 file
         run: |
-          slnfile=$(find . -maxdepth 1 -name '*.sln' | head -n 1)
-          if [[ -z "$slnfile" ]]; then
-            echo "No solution file found!"
-            exit 1
-          fi
-          echo "sln=$slnfile" >> $GITHUB_OUTPUT
+          cat <<'EOF' > update-packages.ps1
+            param(
+                [string]$RootDirectory = "."
+            )
 
-      - name: Update packages using dotnet-outdated
+            function Get-LatestMajorNuGetVersion {
+                param (
+                    [string]$PackageId,
+                    [string]$MajorVersion
+                )
+                $LowerBound = "$MajorVersion."
+                $url = "https://api.nuget.org/v3-flatcontainer/$($PackageId.ToLower())/index.json"
+                try {
+                    $response = Invoke-RestMethod -UseBasicParsing -Uri $url -ErrorAction Stop
+                    if ($response.versions) {
+                        $matching = $response.versions | Where-Object { $_ -like "$LowerBound*" }
+                        if ($matching) {
+                            return $matching[-1]
+                        }
+                    }
+                } catch {
+                    Write-Warning "  Problem downloading info for $PackageId ($url)"
+                }
+                return $null
+            }
+
+            function Update-Packages-InFile {
+                param(
+                    [string]$FilePath,
+                    [ref]$LogReference
+                )
+
+                Write-Host "`nChecking $FilePath" -ForegroundColor Cyan
+                try {
+                    [xml]$xml = Get-Content $FilePath
+                } catch {
+                    Write-Warning "$FilePath is not a valid XML file, skipping."
+                    return
+                }
+
+                $modified = $false
+
+                if ($FilePath -like "*Directory.Packages.props") {
+                    foreach ($itemGroup in $xml.Project.ItemGroup) {
+                        foreach ($pkg in $itemGroup.PackageVersion) {
+                            $pkgId   = $pkg.Include
+                            $currVer = $pkg.Version
+                            if ($currVer -match '^(\d+)\.') {
+                                $major = $matches[1]
+                            } else {
+                                $major = 8 # fallback
+                            }
+                            $latest = Get-LatestMajorNuGetVersion -PackageId $pkgId -MajorVersion $major
+                            if ($latest -and $latest -ne $currVer) {
+                                Write-Host ("  Updating {0} ({1} -> {2})" -f $pkgId,$currVer,$latest) -ForegroundColor Yellow
+                                $pkg.SetAttribute("Version", "$latest")
+                                $modified = $true
+                                $LogReference.Value += "[$FilePath] $pkgId $currVer -> $latest`n"
+                            } else {
+                                Write-Host ("  {0} already up to date ({1})" -f $pkgId,$currVer) -ForegroundColor Gray
+                            }
+                        }
+                    }
+                }
+                elseif ($FilePath -like "*.csproj") {
+                    $itemGroups = $xml.Project.ItemGroup | Where-Object { $_.Condition -match "TargetFramework" }
+                    foreach ($group in $itemGroups) {
+                        if ($group.Condition -match "'\$\((TargetFramework)\)'\s*==\s*'(?<tf>[a-zA-Z0-9\.]+)'") {
+                            $tf = $matches['tf']
+                            if ($tf -match "^net(?<major>\d+)\.0$") {
+                                $major = $matches['major']
+                            } else {
+                                continue
+                            }
+                            $packageItems = $group.PackageVersion
+                            foreach ($pkg in $packageItems) {
+                                $pkgId   = $pkg.Include
+                                $currVer = $pkg.Version
+                                if (-not $pkgId -or -not $currVer) { continue }
+                                $latest = Get-LatestMajorNuGetVersion -PackageId $pkgId -MajorVersion $major
+                                if ($latest -and $latest -ne $currVer) {
+                                    Write-Host ("  Updating {0} ({1} -> {2})" -f $pkgId,$currVer,$latest) -ForegroundColor Yellow
+                                    $pkg.SetAttribute("Version", "$latest")
+                                    $modified = $true
+                                    $LogReference.Value += "[$FilePath] $pkgId $currVer -> $latest`n"
+                                } else {
+                                    Write-Host ("  {0} already up to date ({1})" -f $pkgId,$currVer) -ForegroundColor Gray
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    Write-Host "  Skipped - not relevant type" -ForegroundColor DarkGray
+                    return
+                }
+
+                if ($modified) {
+                    $xml.Save($FilePath)
+                    Write-Host "  Saved $FilePath" -ForegroundColor Green
+                } else {
+                    Write-Host "  No changes in $FilePath"
+                }
+            }
+
+            $log = [System.Text.StringBuilder]::new()
+            $logRef = [ref]$($log)
+            $files = Get-ChildItem -Path $RootDirectory -Recurse -Include "Directory.Packages.props","*.csproj" -File
+            foreach ($file in $files) {
+                Update-Packages-InFile -FilePath $file.FullName -LogReference $logRef
+            }
+
+            Write-Host "`nCompleted full scan!" -ForegroundColor Magenta
+            # Save log of changes for PR description
+            $log.ToString() | Out-File updated-packages.log -Encoding utf8
+            EOF
+
+      - name: Run NuGet major update script
         run: |
-          dotnet outdated "${{ steps.find-sln.outputs.sln }}" --upgrade --no-restore | tee outdated.log
+          pwsh ./update-packages.ps1
 
       - name: Check for changes
         id: git-check
@@ -78,27 +190,24 @@ jobs:
         id: pr-body
         if: steps.git-check.outputs.changed == 'true'
         run: |
-            changes=$(grep -E ' -> ' outdated.log | grep -vE '^\s*$|^\[' | awk '{$1=$1};1' | sort | uniq)
-            if [[ -n "$changes" ]]; then
-                BODY="### The following NuGet packages were updated:"
-                while IFS= read -r line; do
-                    name=$(echo "$line" | awk '{print $1}')
-                    from=$(echo "$line" | awk '{print $2}')
-                    to=$(echo "$line" | awk '{print $4}')
-                    BODY+="
-            - **$name**: \`$from\` ~~→~~ \`$to\`"
-                done <<< "$changes"
-            else
-                BODY="NuGet run did not output package updates, but there are file changes."
-            fi
+          if [[ -s updated-packages.log ]]; then
+            BODY="### The following NuGet packages were updated:\n"
+            while IFS= read -r line; do
+              f=$(echo "$line" | grep -oP '\[.*?\]' | tr -d '[]')
+              line=$(echo "$line" | sed -E 's/\[.*?\] //')
+              name=$(echo "$line" | awk '{print $1}')
+              from=$(echo "$line" | awk '{print $2}')
+              to=$(echo "$line" | awk '{print $4}')
+              BODY="$BODY- **$name**: \`$from\` ~~→~~ \`$to\` ($f)\n"
+            done < updated-packages.log
+          else
+            BODY="NuGet run did not output package updates, but there are file changes."
+          fi
 
-            # Tylko escape dla % (to potrzebne w GitHub Actions)
-            BODY="${BODY//'%'/'%25'}"
-
-            echo "body<<EOF" >> $GITHUB_OUTPUT
-            echo "$BODY" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-
+          BODY="${BODY//'%'/'%25'}"
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Pull Request
         if: steps.git-check.outputs.changed == 'true'
