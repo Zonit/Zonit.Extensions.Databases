@@ -15,6 +15,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Elementy rozwiązania", "Elementy rozwiązania", "{40342464-2276-461E-B5A4-87DE0C177D23}"
 	ProjectSection(SolutionItems) = preProject
 		Readme.md = Readme.md
+		Update-AllPackages.ps1 = Update-AllPackages.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Example", "Example", "{BDEAF804-BF54-4249-B593-9E2E3C8AD126}"

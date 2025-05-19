@@ -1,57 +1,66 @@
 <Project>
-	<PropertyGroup>
-		<EnableCentralPackageManagement>true</EnableCentralPackageManagement>
-		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-	  
-		<AssemblyVersion>1.0.4</AssemblyVersion>
-		<FileVersion>$(AssemblyVersion)</FileVersion>
-		<Version>$(AssemblyVersion)</Version>
-		<Authors>Zonit</Authors>
-		<Title>Zonit.Extensions.Databases</Title>
-		<PackageOutputPath>$(SolutionDir)Packages</PackageOutputPath>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<PackageProjectUrl>https://github.com/Zonit</PackageProjectUrl>
-		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/Zonit/Zonit.Extensions.Databases</RepositoryUrl>
-		<PackageReadmeFile>Readme.md</PackageReadmeFile>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<Description>A flexible and extensible library for building repositories and managing CRUD operations using Entity Framework Core. Includes support for DTOs, dynamic queries, and external data extensions.</Description>
-		<Summary>Simplify and accelerate repository development with clean abstractions and support for external data sources.</Summary>
-		<PackageTags>Zonit, EntityFramework, CRUD, Repository, Database, Extensions, DTO</PackageTags>
-
-		<!-- Debugging symbol settings -->
-		<IncludeSymbols>true</IncludeSymbols>
-		<IncludeSource>true</IncludeSource>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-	</PropertyGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
-		<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
-		<PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.15" />
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.15" />
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.15" />
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.15">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageVersion>
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-		<PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.4" />
-		<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.4" />
-		<PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.4" />
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.4" />
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageVersion>
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="..\..\Readme.md" Pack="true" PackagePath="" Visible="false" />
-	</ItemGroup>
+  <PropertyGroup>
+    <EnableCentralPackageManagement>true</EnableCentralPackageManagement>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyVersion>1.0.4</AssemblyVersion>
+    <FileVersion>$(AssemblyVersion)</FileVersion>
+    <Version>$(AssemblyVersion)</Version>
+    <Authors>Zonit</Authors>
+    <Title>Zonit.Extensions.Databases</Title>
+    <PackageOutputPath>$(SolutionDir)Packages</PackageOutputPath>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/Zonit</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/Zonit/Zonit.Extensions.Databases</RepositoryUrl>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>A flexible and extensible library for building repositories and managing CRUD operations using Entity Framework Core. Includes support for DTOs, dynamic queries, and external data extensions.</Description>
+    <Summary>Simplify and accelerate repository development with clean abstractions and support for external data sources.</Summary>
+    <PackageTags>Zonit, EntityFramework, CRUD, Repository, Database, Extensions, DTO</PackageTags>
+    <!-- Debugging symbol settings -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.16" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.16" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.16" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.16" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.16">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.5" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.5" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0-preview.4.25258.110" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0-preview.4.25258.110" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.0-preview.4.25258.110" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.0-preview.4.25258.110" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0-preview.4.25258.110" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0-preview.4.25258.110" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0-preview.4.25258.110">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Readme.md" Pack="true" PackagePath="" Visible="false" />
+  </ItemGroup>
 </Project>
