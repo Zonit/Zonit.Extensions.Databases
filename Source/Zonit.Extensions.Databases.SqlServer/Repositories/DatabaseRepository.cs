@@ -5,8 +5,9 @@ using Zonit.Extensions.Databases.SqlServer.Services;
 namespace Zonit.Extensions.Databases.SqlServer.Repositories;
 
 public abstract class DatabaseRepository<TEntity>(
-    ContextBase _context
-    ) : IDatabaseRepository<TEntity>
+        ContextBase _context
+    ) : 
+        IDatabaseRepository<TEntity>
     where TEntity : class
 {
     public List<Expression<Func<TEntity, object?>>>? ExtensionsExpressions { get; set; }
@@ -53,8 +54,8 @@ public abstract class DatabaseRepository<TEntity>(
     public async Task<TDto> AddAsync<TDto>(TEntity entity, CancellationToken cancellationToken = default)
         => MappingService.Dto<TDto>(await this.AddAsync(entity, cancellationToken));
 
-    public IDatabaseRepository<TEntity> AsQuery()
-        => Clone();
+    public IDatabaseAsQueryable<TEntity> AsQuery()
+        => new DatabaseAsQueryable<TEntity>(Clone());
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {

@@ -4,6 +4,7 @@ using Zonit.Extensions.Databases.SqlServer.Services;
 
 namespace Zonit.Extensions.Databases.SqlServer.Repositories;
 
+[Obsolete("IDatabasesRepository is deprecated and may be phased out in the future. Use the new IDatabaseRepository solution")]
 public abstract class DatabasesRepository<TEntity>(
     ContextBase _context
     ) : IDatabasesRepository<TEntity> 

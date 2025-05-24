@@ -197,7 +197,7 @@ Below is an **overview of the main interfaces and methods**.
 
 ```csharp
 // Queryable & CRUD interface for TEntity
-IDatabaseRepository<TEntity> AsQuery();
+IDatabaseAsQueryable<TEntity> AsQuery();
 
 // Query customization:
 IDatabaseQueryOperations<TEntity> Extension(Expression<Func<TEntity, object?>> extensionExpression);

@@ -23,7 +23,9 @@ internal class BlogBackground(
         _logger.LogInformation("Create: {Id} {Title} {Content} {Created}", createBlog.Id, createBlog.Title, createBlog.Content, createBlog.Created);
 
         // Read
-        var read = await _blogRepository.Where(x => x.Title == "Hello World").GetFirstAsync(stoppingToken);
+        var query = _blogRepository.AsQuery();
+        query = query.Where(x => x.Title == "Hello World");
+        var read = await query.GetFirstAsync(stoppingToken);
 
         if (read is not null)
             _logger.LogInformation("Read: {Id} {Title} {Content} {Created}", read.Id, read.Title, read.Content, read.Created);

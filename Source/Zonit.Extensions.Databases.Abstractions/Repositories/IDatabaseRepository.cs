@@ -6,5 +6,5 @@ public interface IDatabaseRepository<TEntity> :
     IDatabaseMultipleQueryable<TEntity>,    // Repozytorium wielu rekordów
     IDatabaseManagement<TEntity>            // Zarządzanie danymi
 {
-    IDatabaseRepository<TEntity> AsQuery();
+    IDatabaseAsQueryable<TEntity> AsQuery();
 }
