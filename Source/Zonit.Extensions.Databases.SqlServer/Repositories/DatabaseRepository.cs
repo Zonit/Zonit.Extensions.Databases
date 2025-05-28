@@ -195,16 +195,18 @@ public abstract class DatabaseRepository<TEntity>(
             .AsNoTracking();
 
         entities = FilterExpression is not null ? entities.Where(FilterExpression) : entities;
-        entities = OrderByColumnSelector is not null ? entities.OrderBy(OrderByColumnSelector) : entities;
-        entities = OrderByDescendingColumnSelector is not null ? entities.OrderByDescending(OrderByDescendingColumnSelector) : entities;
-        entities = SelectColumns is not null ? entities.Select(SelectColumns) : entities;
 
         if (IncludeExpressions is not null)
             foreach (var includeExpression in IncludeExpressions)
                 entities = entities.Include(includeExpression);
 
+        entities = OrderByColumnSelector is not null ? entities.OrderBy(OrderByColumnSelector) : entities;
+        entities = OrderByDescendingColumnSelector is not null ? entities.OrderByDescending(OrderByDescendingColumnSelector) : entities;
+
         entities = SkipCount is not null ? entities.Skip(SkipCount.Value) : entities;
         entities = TakeCount is not null ? entities.Take(TakeCount.Value) : entities;
+
+        entities = SelectColumns is not null ? entities.Select(SelectColumns) : entities;
 
         var result = await entities.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
@@ -228,16 +230,18 @@ public abstract class DatabaseRepository<TEntity>(
             .AsNoTracking();
 
         entities = FilterExpression is not null ? entities.Where(FilterExpression) : entities;
-        entities = OrderByColumnSelector is not null ? entities.OrderBy(OrderByColumnSelector) : entities;
-        entities = OrderByDescendingColumnSelector is not null ? entities.OrderByDescending(OrderByDescendingColumnSelector) : entities;
-        entities = SelectColumns is not null ? entities.Select(SelectColumns) : entities;
 
         if (IncludeExpressions is not null)
             foreach (var includeExpression in IncludeExpressions)
                 entities = entities.Include(includeExpression);
 
+        entities = OrderByColumnSelector is not null ? entities.OrderBy(OrderByColumnSelector) : entities;
+        entities = OrderByDescendingColumnSelector is not null ? entities.OrderByDescending(OrderByDescendingColumnSelector) : entities;
+
         entities = SkipCount is not null ? entities.Skip(SkipCount.Value) : entities;
         entities = TakeCount is not null ? entities.Take(TakeCount.Value) : entities;
+
+        entities = SelectColumns is not null ? entities.Select(SelectColumns) : entities;
 
         var result = await entities.ToListAsync(cancellationToken).ConfigureAwait(false);
 
