@@ -14,7 +14,7 @@ public interface IDatabaseAsQueryable<TEntity> :
 {
     new IDatabaseAsQueryable<TEntity> Where(Expression<Func<TEntity, bool>> predicate);
     new IDatabaseAsQueryable<TEntity> Include(Expression<Func<TEntity, object?>> include);
-    new IDatabaseAsQueryable<TEntity> Select<TDto>(Expression<Func<TEntity, TDto>> selector);
+    new IDatabaseAsQueryable<TEntity> Select(Expression<Func<TEntity, TEntity>> selector);
     new IDatabaseAsQueryable<TEntity> Skip(int count);
     new IDatabaseAsQueryable<TEntity> Take(int count);
     new IDatabaseAsQueryable<TEntity> OrderBy(Expression<Func<TEntity, object>> keySelector);

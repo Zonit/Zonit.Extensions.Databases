@@ -12,5 +12,5 @@ public interface IDatabaseQueryable<TEntity> :
     IDatabaseMultipleRepository<TEntity> // repozytorium wielu rekordów
 {
     IDatabaseQueryOperations<TEntity> Extension(Expression<Func<TEntity, object?>> extensionExpression);
-    IDatabaseQueryOperations<TEntity> Select<TDto>(Expression<Func<TEntity, TDto>> selector);
+    IDatabaseQueryOperations<TEntity> Select(Expression<Func<TEntity, TEntity>> selector);
 }

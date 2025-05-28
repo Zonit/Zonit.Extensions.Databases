@@ -15,7 +15,7 @@ public class DatabaseAsQueryable<TEntity>(
     public IDatabaseAsQueryable<TEntity> Include(Expression<Func<TEntity, object?>> include)
         => new DatabaseAsQueryable<TEntity>((DatabaseRepository<TEntity>)_repository.Include(include));
 
-    public IDatabaseAsQueryable<TEntity> Select<TDto>(Expression<Func<TEntity, TDto>> selector)
+    public IDatabaseAsQueryable<TEntity> Select(Expression<Func<TEntity, TEntity>> selector)
         => new DatabaseAsQueryable<TEntity>((DatabaseRepository<TEntity>)_repository.Select(selector));
 
     public IDatabaseAsQueryable<TEntity> Skip(int count)
@@ -43,7 +43,7 @@ public class DatabaseAsQueryable<TEntity>(
     IDatabaseQueryOperations<TEntity> IDatabaseQueryOperations<TEntity>.Where(Expression<Func<TEntity, bool>> whereExpression)
         => Where(whereExpression);
 
-    IDatabaseQueryOperations<TEntity> IDatabaseQueryable<TEntity>.Select<TDto>(Expression<Func<TEntity, TDto>> selector)
+    IDatabaseQueryOperations<TEntity> IDatabaseQueryable<TEntity>.Select(Expression<Func<TEntity, TEntity>> selector)
         => Select(selector);
 
     #endregion

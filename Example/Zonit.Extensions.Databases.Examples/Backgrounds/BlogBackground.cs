@@ -24,7 +24,7 @@ internal class BlogBackground(
 
         // Read
         var query = _blogRepository.AsQuery();
-        query = query.Where(x => x.Title == "Hello World");
+        query = query.Where(x => x.Title == "Hello World"); //.Select(x => new Blog { Title = x.Title });
         var read = await query.GetFirstAsync(stoppingToken);
 
         if (read is not null)

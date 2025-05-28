@@ -280,10 +280,10 @@ public abstract class DatabaseRepository<TEntity>(
         return newRepo;
     }
 
-    public IDatabaseQueryOperations<TEntity> Select<TDto>(Expression<Func<TEntity, TDto>> selector)
+    public IDatabaseQueryOperations<TEntity> Select(Expression<Func<TEntity, TEntity>> selector)
     {
         var newRepo = Clone();
-        newRepo.SelectColumns = selector as Expression<Func<TEntity, TEntity>>;
+        newRepo.SelectColumns = selector;
         return newRepo;
     }
 
