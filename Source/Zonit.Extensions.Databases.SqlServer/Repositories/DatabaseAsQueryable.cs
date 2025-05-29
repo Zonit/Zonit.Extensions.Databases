@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Linq.Expressions;
 
 namespace Zonit.Extensions.Databases.SqlServer.Repositories;
 
@@ -11,6 +12,12 @@ public class DatabaseAsQueryable<TEntity>(
 
     public IDatabaseAsQueryable<TEntity> Where(Expression<Func<TEntity, bool>> predicate)
         => new DatabaseAsQueryable<TEntity>((DatabaseRepository<TEntity>)_repository.Where(predicate));
+
+    public IDatabaseAsQueryable<TEntity> WhereFullText(Expression<Func<TEntity, string>> propertySelector, string searchTerm)
+        => new DatabaseAsQueryable<TEntity>((DatabaseRepository<TEntity>)_repository.WhereFullText(propertySelector, searchTerm));
+
+    public IDatabaseAsQueryable<TEntity> WhereFreeText(Expression<Func<TEntity, string>> propertySelector, string searchTerm)
+        => new DatabaseAsQueryable<TEntity>((DatabaseRepository<TEntity>)_repository.WhereFreeText(propertySelector, searchTerm));
 
     public IDatabaseAsQueryable<TEntity> Include(Expression<Func<TEntity, object?>> include)
         => new DatabaseAsQueryable<TEntity>((DatabaseRepository<TEntity>)_repository.Include(include));
@@ -45,6 +52,12 @@ public class DatabaseAsQueryable<TEntity>(
 
     IDatabaseQueryOperations<TEntity> IDatabaseQueryable<TEntity>.Select(Expression<Func<TEntity, TEntity>> selector)
         => Select(selector);
+
+    IDatabaseQueryOperations<TEntity> IDatabaseQueryOperations<TEntity>.WhereFullText(Expression<Func<TEntity, string>> propertySelector, string searchTerm)
+        => WhereFullText(propertySelector, searchTerm);
+
+    IDatabaseQueryOperations<TEntity> IDatabaseQueryOperations<TEntity>.WhereFreeText(Expression<Func<TEntity, string>> propertySelector, string searchTerm)
+        => WhereFreeText(propertySelector, searchTerm);
 
     #endregion
 

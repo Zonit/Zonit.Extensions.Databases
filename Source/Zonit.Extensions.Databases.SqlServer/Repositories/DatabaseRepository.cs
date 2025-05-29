@@ -387,4 +387,103 @@ public abstract class DatabaseRepository<TEntity>(
 
         return newRepo;
     }
+
+    public IDatabaseQueryOperations<TEntity> WhereFullText(Expression<Func<TEntity, string>> propertySelector, string searchTerm)
+    {
+        var newRepo = Clone();
+
+        // Budujemy dynamiczne wyrażenie, które zostanie przetworzone na funkcję CONTAINS w SQL
+        var parameter = Expression.Parameter(typeof(TEntity), "x");
+        var property = Expression.Invoke(propertySelector, parameter);
+
+        // EF Core przetłumaczy to wyrażenie na CONTAINS w SQL Server
+        // Metoda EF.Functions.Contains zostanie zamieniona na odpowiednią funkcję pełnotekstowego wyszukiwania
+        var containsMethod = typeof(SqlServerDbFunctionsExtensions)
+            .GetMethod(nameof(SqlServerDbFunctionsExtensions.Contains),
+                new[] { typeof(DbFunctions), typeof(string), typeof(string) });
+
+        if (containsMethod == null)
+            throw new InvalidOperationException("Nie można znaleźć metody SqlServerDbFunctionsExtensions.Contains");
+
+        var efFunctionsProperty = typeof(EF).GetProperty(nameof(EF.Functions));
+
+        if (efFunctionsProperty == null)
+            throw new InvalidOperationException("Nie można znaleźć właściwości EF.Functions");
+
+        var efFunctions = Expression.Property(null, efFunctionsProperty);
+
+        var methodCall = Expression.Call(
+            containsMethod,
+            efFunctions,
+            property,
+            Expression.Constant(searchTerm)
+        );
+
+        var lambda = Expression.Lambda<Func<TEntity, bool>>(methodCall, parameter);
+
+        // Łączymy nowe wyrażenie z istniejącym FilterExpression
+        if (newRepo.FilterExpression is null)
+        {
+            newRepo.FilterExpression = lambda;
+        }
+        else
+        {
+            var invokedExpr = Expression.Invoke(lambda, newRepo.FilterExpression.Parameters.Cast<Expression>());
+            newRepo.FilterExpression = Expression.Lambda<Func<TEntity, bool>>(
+                Expression.AndAlso(newRepo.FilterExpression.Body, invokedExpr),
+                newRepo.FilterExpression.Parameters
+            );
+        }
+
+        return newRepo;
+    }
+
+    // Metoda używająca FREETEXT - lepsza dla form gramatycznych
+    public IDatabaseQueryOperations<TEntity> WhereFreeText(Expression<Func<TEntity, string>> propertySelector, string searchTerm)
+    {
+        var newRepo = Clone();
+
+        // Budujemy dynamiczne wyrażenie, które zostanie przetworzone na funkcję FREETEXT w SQL
+        var parameter = Expression.Parameter(typeof(TEntity), "x");
+        var property = Expression.Invoke(propertySelector, parameter);
+
+        // EF Core przetłumaczy to wyrażenie na FREETEXT w SQL Server
+        var freeTextMethod = typeof(SqlServerDbFunctionsExtensions)
+            .GetMethod(nameof(SqlServerDbFunctionsExtensions.FreeText),
+                new[] { typeof(DbFunctions), typeof(string), typeof(string) });
+
+        if (freeTextMethod == null)
+            throw new InvalidOperationException("Nie można znaleźć metody SqlServerDbFunctionsExtensions.FreeText");
+
+        var efFunctionsProperty = typeof(EF).GetProperty(nameof(EF.Functions));
+
+        if (efFunctionsProperty == null)
+            throw new InvalidOperationException("Nie można znaleźć właściwości EF.Functions");
+
+        var efFunctions = Expression.Property(null, efFunctionsProperty);
+
+        var methodCall = Expression.Call(
+            freeTextMethod,
+            efFunctions,
+            property,
+            Expression.Constant(searchTerm)
+        );
+
+        var lambda = Expression.Lambda<Func<TEntity, bool>>(methodCall, parameter);
+
+        if (newRepo.FilterExpression is null)
+        {
+            newRepo.FilterExpression = lambda;
+        }
+        else
+        {
+            var invokedExpr = Expression.Invoke(lambda, newRepo.FilterExpression.Parameters.Cast<Expression>());
+            newRepo.FilterExpression = Expression.Lambda<Func<TEntity, bool>>(
+                Expression.AndAlso(newRepo.FilterExpression.Body, invokedExpr),
+                newRepo.FilterExpression.Parameters
+            );
+        }
+
+        return newRepo;
+    }
 }

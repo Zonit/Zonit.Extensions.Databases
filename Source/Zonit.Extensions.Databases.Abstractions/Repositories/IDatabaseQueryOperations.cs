@@ -12,4 +12,6 @@ public interface IDatabaseQueryOperations<TEntity> :
 {
     IDatabaseQueryOperations<TEntity> Include(Expression<Func<TEntity, object?>> includeExpression);
     IDatabaseQueryOperations<TEntity> Where(Expression<Func<TEntity, bool>> whereExpression);
+    IDatabaseQueryOperations<TEntity> WhereFullText(Expression<Func<TEntity, string>> propertySelector, string searchTerm);
+    IDatabaseQueryOperations<TEntity> WhereFreeText(Expression<Func<TEntity, string>> propertySelector, string searchTerm);
 }
