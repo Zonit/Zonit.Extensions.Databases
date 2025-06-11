@@ -309,15 +309,15 @@ public abstract class DatabaseRepository<TEntity>(
     {
         using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var dbSet = context.Set<TEntity>();
-        var entity = await dbSet.FindAsync([id], cancellationToken);
+        var query = context.Set<TEntity>().AsSplitQuery();
+
+        if (IncludeExpressions is not null) 
+            foreach (var includeExpression in IncludeExpressions)
+                query = query.Include(includeExpression);
+
+        var entity = await query.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id, cancellationToken);
         if (entity is null)
             return false;
-
-        // Dodajemy Include jeśli są zdefiniowane
-        if (IncludeExpressions is not null)
-            foreach (var includeExpression in IncludeExpressions)
-                await context.Entry(entity).Reference(includeExpression).LoadAsync(cancellationToken);
 
         updateAction(entity);
 
@@ -328,15 +328,15 @@ public abstract class DatabaseRepository<TEntity>(
     {
         using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var dbSet = context.Set<TEntity>();
-        var entity = await dbSet.FindAsync([id], cancellationToken);
-        if (entity is null)
-            return false;
+        var query = context.Set<TEntity>().AsSplitQuery();
 
-        // Dodajemy Include jeśli są zdefiniowane
         if (IncludeExpressions is not null)
             foreach (var includeExpression in IncludeExpressions)
-                await context.Entry(entity).Reference(includeExpression).LoadAsync(cancellationToken);
+                query = query.Include(includeExpression);
+
+        var entity = await query.FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id, cancellationToken);
+        if (entity is null)
+            return false;
 
         updateAction(entity);
 
