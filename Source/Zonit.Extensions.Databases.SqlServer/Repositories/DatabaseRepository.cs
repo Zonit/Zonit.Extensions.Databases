@@ -309,9 +309,15 @@ public abstract class DatabaseRepository<TEntity>(
     {
         using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var entity = await context.Set<TEntity>().FindAsync([id], cancellationToken);
+        var dbSet = context.Set<TEntity>();
+        var entity = await dbSet.FindAsync([id], cancellationToken);
         if (entity is null)
             return false;
+
+        // Dodajemy Include jeśli są zdefiniowane
+        if (IncludeExpressions is not null)
+            foreach (var includeExpression in IncludeExpressions)
+                await context.Entry(entity).Reference(includeExpression).LoadAsync(cancellationToken);
 
         updateAction(entity);
 
@@ -322,9 +328,15 @@ public abstract class DatabaseRepository<TEntity>(
     {
         using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var entity = await context.Set<TEntity>().FindAsync([id], cancellationToken);
+        var dbSet = context.Set<TEntity>();
+        var entity = await dbSet.FindAsync([id], cancellationToken);
         if (entity is null)
             return false;
+
+        // Dodajemy Include jeśli są zdefiniowane
+        if (IncludeExpressions is not null)
+            foreach (var includeExpression in IncludeExpressions)
+                await context.Entry(entity).Reference(includeExpression).LoadAsync(cancellationToken);
 
         updateAction(entity);
 
@@ -352,6 +364,11 @@ public abstract class DatabaseRepository<TEntity>(
             .AsNoTracking();
 
         entities = FilterExpression is not null ? entities.Where(FilterExpression) : entities;
+
+        // Dodajemy Include jeśli są zdefiniowane
+        if (IncludeExpressions is not null)
+            foreach (var includeExpression in IncludeExpressions)
+                entities = entities.Include(includeExpression);
 
         var result = await entities.ToListAsync(cancellationToken).ConfigureAwait(false);
 
