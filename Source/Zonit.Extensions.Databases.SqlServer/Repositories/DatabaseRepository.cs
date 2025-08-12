@@ -110,7 +110,14 @@ public abstract class DatabaseRepository<TEntity>(
     public async Task<bool> AnyAsync(CancellationToken cancellationToken = default)
     {
         using var context = await _context.LocalDbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        return await context.Set<TEntity>().AnyAsync(cancellationToken);
+        
+        var entities = context.Set<TEntity>()
+            .AsNoTracking();
+
+        if (FilterExpression is not null)
+            entities = entities.Where(FilterExpression);
+
+        return await entities.AnyAsync(cancellationToken);
     }
 
     public async Task<TEntity?> GetAsync(CancellationToken cancellationToken = default)
