@@ -1,0 +1,119 @@
+{
+  "ChangeSummary": [
+    "Microsoft.EntityFrameworkCore [net10.0]: 10.0.0-preview.4.25258.110 → 10.0.0",
+    "Microsoft.EntityFrameworkCore [net8.0]: 8.0.16 → 8.0.22",
+    "Microsoft.EntityFrameworkCore [net9.0]: 9.0.5 → 9.0.11",
+    "Microsoft.EntityFrameworkCore.Abstractions [net10.0]: 10.0.0-preview.4.25258.110 → 10.0.0",
+    "Microsoft.EntityFrameworkCore.Abstractions [net8.0]: 8.0.16 → 8.0.22",
+    "Microsoft.EntityFrameworkCore.Abstractions [net9.0]: 9.0.5 → 9.0.11",
+    "Microsoft.EntityFrameworkCore.Relational [net10.0]: 10.0.0-preview.4.25258.110 → 10.0.0",
+    "Microsoft.EntityFrameworkCore.Relational [net8.0]: 8.0.16 → 8.0.22",
+    "Microsoft.EntityFrameworkCore.Relational [net9.0]: 9.0.5 → 9.0.11",
+    "Microsoft.EntityFrameworkCore.SqlServer [net10.0]: 10.0.0-preview.4.25258.110 → 10.0.0",
+    "Microsoft.EntityFrameworkCore.SqlServer [net8.0]: 8.0.16 → 8.0.22",
+    "Microsoft.EntityFrameworkCore.SqlServer [net9.0]: 9.0.5 → 9.0.11",
+    "Microsoft.Extensions.Hosting [net10.0]: 10.0.0-preview.4.25258.110 → 10.0.0",
+    "Microsoft.Extensions.Hosting [net9.0]: 9.0.5 → 9.0.11"
+  ],
+  "PackageChanges": [
+    {
+      "Package": "Microsoft.EntityFrameworkCore",
+      "Framework": "net8.0",
+      "OldVersion": "8.0.16",
+      "NewVersion": "8.0.22"
+    },
+    {
+      "Package": "Microsoft.EntityFrameworkCore.Abstractions",
+      "Framework": "net8.0",
+      "OldVersion": "8.0.16",
+      "NewVersion": "8.0.22"
+    },
+    {
+      "Package": "Microsoft.EntityFrameworkCore.Relational",
+      "Framework": "net8.0",
+      "OldVersion": "8.0.16",
+      "NewVersion": "8.0.22"
+    },
+    {
+      "Package": "Microsoft.EntityFrameworkCore.SqlServer",
+      "Framework": "net8.0",
+      "OldVersion": "8.0.16",
+      "NewVersion": "8.0.22"
+    },
+    {
+      "Package": "Microsoft.EntityFrameworkCore",
+      "Framework": "net9.0",
+      "OldVersion": "9.0.5",
+      "NewVersion": "9.0.11"
+    },
+    {
+      "Package": "Microsoft.EntityFrameworkCore.Abstractions",
+      "Framework": "net9.0",
+      "OldVersion": "9.0.5",
+      "NewVersion": "9.0.11"
+    },
+    {
+      "Package": "Microsoft.EntityFrameworkCore.Relational",
+      "Framework": "net9.0",
+      "OldVersion": "9.0.5",
+      "NewVersion": "9.0.11"
+    },
+    {
+      "Package": "Microsoft.EntityFrameworkCore.SqlServer",
+      "Framework": "net9.0",
+      "OldVersion": "9.0.5",
+      "NewVersion": "9.0.11"
+    },
+    {
+      "Package": "Microsoft.Extensions.Hosting",
+      "Framework": "net9.0",
+      "OldVersion": "9.0.5",
+      "NewVersion": "9.0.11"
+    },
+    {
+      "Package": "Microsoft.EntityFrameworkCore",
+      "Framework": "net10.0",
+      "OldVersion": "10.0.0-preview.4.25258.110",
+      "NewVersion": "10.0.0"
+    },
+    {
+      "Package": "Microsoft.EntityFrameworkCore.Abstractions",
+      "Framework": "net10.0",
+      "OldVersion": "10.0.0-preview.4.25258.110",
+      "NewVersion": "10.0.0"
+    },
+    {
+      "Package": "Microsoft.EntityFrameworkCore.Relational",
+      "Framework": "net10.0",
+      "OldVersion": "10.0.0-preview.4.25258.110",
+      "NewVersion": "10.0.0"
+    },
+    {
+      "Package": "Microsoft.EntityFrameworkCore.SqlServer",
+      "Framework": "net10.0",
+      "OldVersion": "10.0.0-preview.4.25258.110",
+      "NewVersion": "10.0.0"
+    },
+    {
+      "Package": "Microsoft.Extensions.Hosting",
+      "Framework": "net10.0",
+      "OldVersion": "10.0.0-preview.4.25258.110",
+      "NewVersion": "10.0.0"
+    }
+  ],
+  "Timestamp": "2025-11-15 19:15:34",
+  "TargetFrameworks": [
+    "net8.0",
+    "net9.0",
+    "net10.0"
+  ],
+  "ProjectsFound": 3,
+  "Summary": {
+    "PackagesChanged": 14,
+    "DirectoryPackagesPropsUpdated": true,
+    "FrameworksSet": "net8.0;net9.0;net10.0",
+    "PackagesConfigured": 5,
+    "ProjectsUpdated": 3
+  },
+  "PackagesFound": 5
+}
