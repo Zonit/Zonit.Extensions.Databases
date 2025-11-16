@@ -1,14 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-	</PropertyGroup>
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <IsPackable>false</IsPackable>
-        <StartupObject>Zonit.Extensions.Databases.Examples.Program</StartupObject>
-    </PropertyGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <StartupObject>Zonit.Extensions.Databases.Examples.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Content Include="appsettings.release.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
