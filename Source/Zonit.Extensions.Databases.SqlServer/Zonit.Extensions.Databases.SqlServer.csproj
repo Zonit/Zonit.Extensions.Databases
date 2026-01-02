@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 	</PropertyGroup>
@@ -10,7 +10,18 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" />
 	</ItemGroup>
+
+	<!-- Development: Use ProjectReference for local debugging -->
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<ProjectReference Include="..\..\..\Zonit.Extensions\Source\Zonit.Extensions\Zonit.Extensions.csproj" />
+	</ItemGroup>
+
+	<!-- Release: Use PackageReference for NuGet package -->
+	<ItemGroup Condition="'$(Configuration)' == 'Release'">
+		<PackageReference Include="Zonit.Extensions" />
+	</ItemGroup>
+	
 	<ItemGroup>
-	  <ProjectReference Include="..\Zonit.Extensions.Databases.Abstractions\Zonit.Extensions.Databases.Abstractions.csproj" />
+		<ProjectReference Include="..\Zonit.Extensions.Databases.Abstractions\Zonit.Extensions.Databases.Abstractions.csproj" />
 	</ItemGroup>
 </Project>

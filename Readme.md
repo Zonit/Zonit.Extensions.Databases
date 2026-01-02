@@ -1,4 +1,4 @@
-# Zonit.Extensions.Databases
+Ôªø# Zonit.Extensions.Databases
 
 Zonit.Extensions.Databases is a flexible library for building repositories and handling CRUD operations on databases.  
 It provides abstractions and interfaces, making it easy to manage database access and to extend your repositories with custom logic, REST API data, or other external sources.  
@@ -23,7 +23,7 @@ Install-Package Zonit.Extensions.Databases.SqlServer
 
 ## :rocket: Features
 
-- Speed up repository work ó focus on your logic, not on database ìplumbingî.
+- Speed up repository work ‚Äî focus on your logic, not on database ‚Äúplumbing‚Äù.
 - Simple abstractions for common CRUD operations.
 - Full support for DTO models.
 - Built-in support for query building (`Where`, `Include`, `Select`, paging, ordering, and more).
@@ -126,6 +126,9 @@ builder.Services.AddDbSqlServer<DatabaseContext>();
 
 builder.Services.AddTransient<IBlogRepository, BlogRepository>();
 ```
+
+> **Note:** Your `DatabaseContext` must inherit from `ZonitDbContext<T>` to automatically enable Value Objects support.  
+> See [Value Objects Support](#value-objects-support) section below.
 
 ## :gear: CRUD and Query Operations
 
@@ -257,5 +260,57 @@ The deprecated `IDatabasesRepository<TEntity>` interface has been removed and is
 - Build repository pattern code faster and cleaner.
 - Decouple your database logic from your app logic.
 - Easily extend your repositories with custom business logic or fetch data from external APIs with zero changes to the
+
+---
+
+## :package: Value Objects Support
+
+This library provides **built-in support for Value Objects** from `Zonit.Extensions` package.  
+Simply inherit your DbContext from `ZonitDbContext<T>` to automatically enable EF Core converters for:
+
+| Value Object | Database Type | Max Length | Use Case |
+|-------------|---------------|------------|----------|
+| `Culture` | `NVARCHAR(10)` | 10 | Language codes (en-US, pl-PL) |
+| `UrlSlug` | `NVARCHAR(200)` | 200 | SEO-friendly URLs |
+| `Title` | `NVARCHAR(60)` | 60 | Page/content titles |
+| `Description` | `NVARCHAR(160)` | 160 | Meta descriptions |
+| `Price` | `DECIMAL(19,8)` | - | Monetary values |
+
+### Quick Example
+
+```csharp
+using Zonit.Extensions;
+using Zonit.Extensions.Databases.SqlServer;
+
+// Entity with Value Objects
+public class Article
+{
+    public Guid Id { get; set; }
+    public Title Title { get; set; }
+    public Description Description { get; set; }
+    public UrlSlug Slug { get; set; }
+    public Culture Culture { get; set; }
+}
+
+// DbContext - inherit from ZonitDbContext<T>
+public class DatabaseContext : ZonitDbContext<DatabaseContext>
+{
+    public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options) { }
+
+    public DbSet<Article> Articles { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // Your configuration here
+        modelBuilder.Entity<Article>().ToTable("Articles");
+
+        // ‚úÖ Call base to enable Value Objects
+        base.OnModelCreating(modelBuilder);
+    }
+}
+```
+
+---
+
 ## :information_source: For more examples
 See the `Examples` project included in the repository.
