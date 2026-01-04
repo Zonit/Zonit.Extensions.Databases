@@ -198,20 +198,25 @@ Below is an **overview of the main interfaces and methods**.
 
 ### `IDatabaseRepository<TEntity>`
 
+The main repository interface combines several specialized interfaces for database operations.
+
 ```csharp
-// Queryable & CRUD interface for TEntity
+// Queryable interface for building complex queries
 IDatabaseAsQueryable<TEntity> AsQuery();
 
-// Query customization:
+// Query building and filtering:
 IDatabaseQueryOperations<TEntity> Extension(Expression<Func<TEntity, object?>> extensionExpression);
-IDatabaseQueryOperations<TEntity> Select<TDto>(Expression<Func<TEntity, TDto>> selector);
-
+IDatabaseQueryOperations<TEntity> Select(Expression<Func<TEntity, TEntity>> selector);
 IDatabaseQueryOperations<TEntity> Include(Expression<Func<TEntity, object?>> includeExpression);
 IDatabaseQueryOperations<TEntity> Where(Expression<Func<TEntity, bool>> whereExpression);
+IDatabaseQueryOperations<TEntity> WhereFullText(Expression<Func<TEntity, string>> propertySelector, string searchTerm);
+IDatabaseQueryOperations<TEntity> WhereFreeText(Expression<Func<TEntity, string>> propertySelector, string searchTerm);
 
+// Pagination:
 IDatabaseMultipleQueryable<TEntity> Skip(int count);
 IDatabaseMultipleQueryable<TEntity> Take(int count);
 
+// Sorting:
 IDatabaseMultipleRepository<TEntity> OrderBy(Expression<Func<TEntity, object>> keySelector);
 IDatabaseMultipleRepository<TEntity> OrderByDescending(Expression<Func<TEntity, object>> keySelector);
 
@@ -226,16 +231,18 @@ Task<TDto?> GetAsync<TDto>(CancellationToken cancellationToken = default);
 // Existence check:
 Task<bool> AnyAsync(CancellationToken cancellationToken = default);
 
-// Add/Update/Delete:
+// Add operations:
 Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default);
 Task<TDto> AddAsync<TDto>(TEntity entity, CancellationToken cancellationToken = default);
 
+// Update operations:
 Task<bool> UpdateAsync(int id, Action<TEntity> updateAction, CancellationToken cancellationToken = default);
 Task<bool> UpdateAsync(Guid id, Action<TEntity> updateAction, CancellationToken cancellationToken = default);
 Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
-Task<bool> DeleteAsync(int entity, CancellationToken cancellationToken = default);
-Task<bool> DeleteAsync(Guid entity, CancellationToken cancellationToken = default);
+// Delete operations:
+Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
+Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
 
 // Multiple records access:

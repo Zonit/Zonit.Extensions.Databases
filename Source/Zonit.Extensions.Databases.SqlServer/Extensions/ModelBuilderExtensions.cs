@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System;
 using Zonit.Extensions;
 
 namespace Zonit.Extensions.Databases.SqlServer.Extensions;
@@ -48,6 +49,11 @@ public static class ModelBuilderExtensions
                     property.SetPrecision(19);
                     property.SetScale(8);
                 }
+                else if (property.ClrType == typeof(Url))
+                {
+                    property.SetValueConverter(new UrlConverter());
+                    property.SetMaxLength(2048); // Standard max URL length
+                }
             }
         }
 
@@ -85,6 +91,11 @@ public static class ModelBuilderExtensions
             .Properties<Price>()
             .HaveConversion<PriceConverter>()
             .HavePrecision(19, 8);
+
+        configurationBuilder
+            .Properties<Url>()
+            .HaveConversion<UrlConverter>()
+            .HaveMaxLength(2048);
     }
 }
 
@@ -149,6 +160,19 @@ public class PriceConverter : ValueConverter<Price, decimal>
         : base(
             v => v.Value,
             v => new Price(v, true)) // allowNegative = true (cannot use named arguments in expression trees)
+    {
+    }
+}
+
+/// <summary>
+/// Value converter for Url value object.
+/// </summary>
+public class UrlConverter : ValueConverter<Url, string>
+{
+    public UrlConverter()
+        : base(
+            v => v.Value,
+            v => new Url(v))
     {
     }
 }
