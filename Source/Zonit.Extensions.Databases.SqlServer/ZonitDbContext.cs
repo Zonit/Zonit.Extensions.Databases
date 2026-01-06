@@ -13,6 +13,18 @@ namespace Zonit.Extensions.Databases.SqlServer;
 /// <param name="options">The options for this context.</param>
 public abstract class ZonitDbContext(DbContextOptions options) : DbContext(options)
 {
+    /// <summary>
+    /// Configures conventions for Zonit Value Objects.
+    /// Override this method to add additional conventions, but always call base.ConfigureConventions(configurationBuilder).
+    /// </summary>
+    /// <param name="configurationBuilder">The builder being used to configure conventions.</param>
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        // Automatically configure Zonit Value Objects conventions
+        configurationBuilder.UseZonitValueObjectConventions();
+
+        base.ConfigureConventions(configurationBuilder);
+    }
 
     /// <summary>
     /// Configures the model with Zonit Value Objects converters.
@@ -41,6 +53,19 @@ public abstract class ZonitDbContext<TContext> : DbContext where TContext : DbCo
     /// <param name="options">The options for this context.</param>
     protected ZonitDbContext(DbContextOptions<TContext> options) : base(options)
     {
+    }
+
+    /// <summary>
+    /// Configures conventions for Zonit Value Objects.
+    /// Override this method to add additional conventions, but always call base.ConfigureConventions(configurationBuilder).
+    /// </summary>
+    /// <param name="configurationBuilder">The builder being used to configure conventions.</param>
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        // Automatically configure Zonit Value Objects conventions
+        configurationBuilder.UseZonitValueObjectConventions();
+
+        base.ConfigureConventions(configurationBuilder);
     }
 
     /// <summary>
