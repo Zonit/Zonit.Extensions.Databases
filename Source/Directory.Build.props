@@ -1,6 +1,39 @@
 <Project>
+  <!-- Common NuGet Package Metadata for all Zonit.Extensions.Databases packages -->
   <PropertyGroup>
-    <!-- Mark all projects in Zonit.Extensions.Databases as AOT-compatible -->
+    <Authors>Zonit</Authors>
+    <Company>Zonit</Company>
+    <Product>Zonit.Extensions.Databases</Product>
+    <Copyright>Copyright (c) Zonit</Copyright>
+    
+    <!-- Repository and Project URLs -->
+    <PackageProjectUrl>https://github.com/Zonit/Zonit.Extensions.Databases</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Zonit/Zonit.Extensions.Databases</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    
+    <!-- License -->
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    
+    <!-- Package Assets -->
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <PackageReleaseNotes>See https://github.com/Zonit/Zonit.Extensions.Databases/releases</PackageReleaseNotes>
+    
+    <!-- Build settings -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    
+    <!-- AOT and Trimming support -->
+    <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+  
+  <!-- Language settings -->
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 </Project>

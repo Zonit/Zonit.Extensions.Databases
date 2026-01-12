@@ -43,6 +43,11 @@ public static class ModelBuilderExtensions
                     property.SetValueConverter(new DescriptionConverter());
                     property.SetMaxLength(Description.MaxLength);
                 }
+                else if (property.ClrType == typeof(Content))
+                {
+                    property.SetValueConverter(new ContentConverter());
+                    // Content uses nvarchar(max) - no length limit
+                }
                 else if (property.ClrType == typeof(Price))
                 {
                     property.SetValueConverter(new PriceConverter());
@@ -88,6 +93,11 @@ public static class ModelBuilderExtensions
             .HaveMaxLength(Description.MaxLength);
 
         configurationBuilder
+            .Properties<Content>()
+            .HaveConversion<ContentConverter>();
+            // Content uses nvarchar(max) - no length limit
+
+        configurationBuilder
             .Properties<Price>()
             .HaveConversion<PriceConverter>()
             .HavePrecision(19, 8);
@@ -101,52 +111,70 @@ public static class ModelBuilderExtensions
 
 /// <summary>
 /// Value converter for Culture value object.
+/// Handles null/empty values from database by returning default (empty) Culture.
 /// </summary>
 public class CultureConverter : ValueConverter<Culture, string>
 {
     public CultureConverter()
         : base(
             v => v.Value,
-            v => new Culture(v))
+            v => string.IsNullOrWhiteSpace(v) ? default : new Culture(v))
     {
     }
 }
 
 /// <summary>
 /// Value converter for UrlSlug value object.
+/// Handles null/empty values from database by returning default (empty) UrlSlug.
 /// </summary>
 public class UrlSlugConverter : ValueConverter<UrlSlug, string>
 {
     public UrlSlugConverter()
         : base(
             v => v.Value,
-            v => new UrlSlug(v))
+            v => string.IsNullOrWhiteSpace(v) ? default : new UrlSlug(v))
     {
     }
 }
 
 /// <summary>
 /// Value converter for Title value object.
+/// Handles null/empty values from database by returning default (empty) Title.
 /// </summary>
 public class TitleConverter : ValueConverter<Title, string>
 {
     public TitleConverter()
         : base(
             v => v.Value,
-            v => new Title(v))
+            v => string.IsNullOrWhiteSpace(v) ? default : new Title(v))
     {
     }
 }
 
 /// <summary>
 /// Value converter for Description value object.
+/// Handles null/empty values from database by returning default (empty) Description.
 /// </summary>
 public class DescriptionConverter : ValueConverter<Description, string>
 {
     public DescriptionConverter()
         : base(
             v => v.Value,
-            v => new Description(v))
+            v => string.IsNullOrWhiteSpace(v) ? default : new Description(v))
+    {
+    }
+}
+
+/// <summary>
+/// Value converter for Content value object.
+/// Handles null/empty values from database by returning default (empty) Content.
+/// </summary>
+public class ContentConverter : ValueConverter<Content, string>
+{
+    public ContentConverter()
+        : base(
+            v => v.Value,
+            v => string.IsNullOrWhiteSpace(v) ? default : new Content(v))
     {
     }
 }
@@ -166,13 +194,14 @@ public class PriceConverter : ValueConverter<Price, decimal>
 
 /// <summary>
 /// Value converter for Url value object.
+/// Handles null/empty values from database by returning default (empty) Url.
 /// </summary>
 public class UrlConverter : ValueConverter<Url, string>
 {
     public UrlConverter()
         : base(
             v => v.Value,
-            v => new Url(v))
+            v => string.IsNullOrWhiteSpace(v) ? default : new Url(v))
     {
     }
 }

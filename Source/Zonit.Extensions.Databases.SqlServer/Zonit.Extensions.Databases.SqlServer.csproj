@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+		<Description>SQL Server implementation of Zonit.Extensions.Databases - provides Entity Framework Core-based repository patterns with flexible CRUD operations, dynamic query building, DTO support, and seamless integration of external or computed data from any source.</Description>
+		<PackageTags>Zonit;Repository;CRUD;Database;Extensions;DTO;SqlServer;DataAccess;ExternalData;Integration;API;CQRS;EntityFramework;EFCore</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
