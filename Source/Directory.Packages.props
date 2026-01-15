@@ -62,7 +62,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.2" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.2" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.2" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2" >
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
