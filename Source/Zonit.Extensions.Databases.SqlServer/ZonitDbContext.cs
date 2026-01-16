@@ -5,7 +5,7 @@ namespace Zonit.Extensions.Databases.SqlServer;
 
 /// <summary>
 /// Base DbContext with automatic configuration for Zonit Value Objects.
-/// Inherit from this class to automatically enable Culture, UrlSlug, Title, Description, and Price value objects.
+/// Inherit from this class to automatically enable Culture, UrlSlug, Title, Description, Price, and Money value objects.
 /// </summary>
 /// <remarks>
 /// Initializes a new instance of the <see cref="ZonitDbContext"/> class.
@@ -42,7 +42,7 @@ public abstract class ZonitDbContext(DbContextOptions options) : DbContext(optio
 
 /// <summary>
 /// Generic base DbContext with automatic configuration for Zonit Value Objects.
-/// Inherit from this class to automatically enable Culture, UrlSlug, Title, Description, and Price value objects.
+/// Inherit from this class to automatically enable Culture, UrlSlug, Title, Description, Price, and Money value objects.
 /// </summary>
 /// <typeparam name="TContext">The type of the context.</typeparam>
 public abstract class ZonitDbContext<TContext> : DbContext where TContext : DbContext

@@ -54,6 +54,12 @@ public static class ModelBuilderExtensions
                     property.SetPrecision(19);
                     property.SetScale(8);
                 }
+                else if (property.ClrType == typeof(Money))
+                {
+                    property.SetValueConverter(new MoneyConverter());
+                    property.SetPrecision(19);
+                    property.SetScale(8);
+                }
                 else if (property.ClrType == typeof(Url))
                 {
                     property.SetValueConverter(new UrlConverter());
@@ -100,6 +106,11 @@ public static class ModelBuilderExtensions
         configurationBuilder
             .Properties<Price>()
             .HaveConversion<PriceConverter>()
+            .HavePrecision(19, 8);
+
+        configurationBuilder
+            .Properties<Money>()
+            .HaveConversion<MoneyConverter>()
             .HavePrecision(19, 8);
 
         configurationBuilder
@@ -188,6 +199,20 @@ public class PriceConverter : ValueConverter<Price, decimal>
         : base(
             v => v.Value,
             v => new Price(v, true)) // allowNegative = true (cannot use named arguments in expression trees)
+    {
+    }
+}
+
+/// <summary>
+/// Value converter for Money value object.
+/// Money allows negative values for balances, transactions, adjustments, etc.
+/// </summary>
+public class MoneyConverter : ValueConverter<Money, decimal>
+{
+    public MoneyConverter()
+        : base(
+            v => v.Value,
+            v => new Money(v))
     {
     }
 }

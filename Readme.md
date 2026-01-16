@@ -281,7 +281,8 @@ Simply inherit your DbContext from `ZonitDbContext<T>` to automatically enable E
 | `UrlSlug` | `NVARCHAR(200)` | 200 | SEO-friendly URLs |
 | `Title` | `NVARCHAR(60)` | 60 | Page/content titles |
 | `Description` | `NVARCHAR(160)` | 160 | Meta descriptions |
-| `Price` | `DECIMAL(19,8)` | - | Monetary values |
+| `Price` | `DECIMAL(19,8)` | - | Product prices (non-negative) |
+| `Money` | `DECIMAL(19,8)` | - | Balances, transactions (can be negative) |
 
 ### Quick Example
 
