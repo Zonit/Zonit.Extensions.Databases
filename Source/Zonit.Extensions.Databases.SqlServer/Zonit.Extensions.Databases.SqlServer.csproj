@@ -14,11 +14,11 @@
 	</ItemGroup>
 
 	<!-- Use ProjectReference for local development, PackageReference for NuGet -->
-	<ItemGroup Condition="Exists('..\..\..\Zonit.Extensions\Source\Zonit.Extensions\Zonit.Extensions.csproj')">
+	<!--<ItemGroup Condition="Exists('..\..\..\Zonit.Extensions\Source\Zonit.Extensions\Zonit.Extensions.csproj')">
 		<ProjectReference Include="..\..\..\Zonit.Extensions\Source\Zonit.Extensions\Zonit.Extensions.csproj" />
-	</ItemGroup>
+	</ItemGroup>-->
 	
-	<ItemGroup Condition="!Exists('..\..\..\Zonit.Extensions\Source\Zonit.Extensions\Zonit.Extensions.csproj')">
+	<ItemGroup>
 		<PackageReference Include="Zonit.Extensions" />
 	</ItemGroup>
 	
