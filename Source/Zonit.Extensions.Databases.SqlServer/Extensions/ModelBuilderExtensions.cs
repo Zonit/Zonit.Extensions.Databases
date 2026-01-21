@@ -65,6 +65,16 @@ public static class ModelBuilderExtensions
                     property.SetValueConverter(new UrlConverter());
                     property.SetMaxLength(2048); // Standard max URL length
                 }
+                else if (property.ClrType == typeof(Asset))
+                {
+                    property.SetValueConverter(new AssetBytesConverter());
+                    // Asset is stored as byte[] with embedded header
+                }
+                else if (property.ClrType == typeof(Color))
+                {
+                    property.SetValueConverter(new ColorConverter());
+                    property.SetMaxLength(100); // OKLCH format with alpha
+                }
             }
         }
 
@@ -101,7 +111,7 @@ public static class ModelBuilderExtensions
         configurationBuilder
             .Properties<Content>()
             .HaveConversion<ContentConverter>();
-            // Content uses nvarchar(max) - no length limit
+        // Content uses nvarchar(max) - no length limit
 
         configurationBuilder
             .Properties<Price>()
@@ -117,6 +127,17 @@ public static class ModelBuilderExtensions
             .Properties<Url>()
             .HaveConversion<UrlConverter>()
             .HaveMaxLength(2048);
+
+        configurationBuilder
+            .Properties<Asset>()
+            .HaveConversion<AssetBytesConverter>();
+        // Asset is stored as byte[] with embedded header
+
+        configurationBuilder
+            .Properties<Color>()
+            .HaveConversion<ColorConverter>()
+            .HaveMaxLength(100);
+        // Color stored as OKLCH string
     }
 }
 
@@ -227,6 +248,36 @@ public class UrlConverter : ValueConverter<Url, string>
         : base(
             v => v.Value,
             v => string.IsNullOrWhiteSpace(v) ? default : new Url(v))
+    {
+    }
+}
+
+/// <summary>
+/// Value converter for Asset value object.
+/// Stores Asset as byte[] with embedded header (name, mimeType).
+/// Format: [4 bytes: header length][UTF-8 JSON header][file data]
+/// </summary>
+public class AssetBytesConverter : ValueConverter<Asset, byte[]>
+{
+    public AssetBytesConverter()
+        : base(
+            v => v.ToStorageBytes(),
+            v => Asset.FromStorageBytes(v))
+    {
+    }
+}
+
+/// <summary>
+/// Value converter for Color value object.
+/// Stores Color as OKLCH CSS string for full precision.
+/// Example: "oklch(65% 0.15 250)" or "oklch(65% 0.15 250 / 0.5)" with alpha.
+/// </summary>
+public class ColorConverter : ValueConverter<Color, string>
+{
+    public ColorConverter()
+        : base(
+            v => v.CssOklch,
+            v => string.IsNullOrWhiteSpace(v) ? Color.Transparent : Color.Parse(v, null))
     {
     }
 }

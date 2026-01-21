@@ -281,8 +281,12 @@ Simply inherit your DbContext from `ZonitDbContext<T>` to automatically enable E
 | `UrlSlug` | `NVARCHAR(200)` | 200 | SEO-friendly URLs |
 | `Title` | `NVARCHAR(60)` | 60 | Page/content titles |
 | `Description` | `NVARCHAR(160)` | 160 | Meta descriptions |
+| `Content` | `NVARCHAR(MAX)` | - | Large text content |
+| `Url` | `NVARCHAR(2048)` | 2048 | URLs with validation |
 | `Price` | `DECIMAL(19,8)` | - | Product prices (non-negative) |
 | `Money` | `DECIMAL(19,8)` | - | Balances, transactions (can be negative) |
+| `Color` | `NVARCHAR(100)` | 100 | Colors in OKLCH format |
+| `Asset` | `VARBINARY(MAX)` | - | Files with metadata (stored as byte[]) |
 
 ### Quick Example
 

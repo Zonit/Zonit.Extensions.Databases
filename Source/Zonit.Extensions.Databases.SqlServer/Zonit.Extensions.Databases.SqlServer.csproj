@@ -13,8 +13,12 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting" />
 	</ItemGroup>
 
-	<!-- Always use PackageReference for Zonit.Extensions for NuGet compatibility -->
-	<ItemGroup>
+	<!-- Use ProjectReference for local development, PackageReference for NuGet -->
+	<ItemGroup Condition="Exists('..\..\..\Zonit.Extensions\Source\Zonit.Extensions\Zonit.Extensions.csproj')">
+		<ProjectReference Include="..\..\..\Zonit.Extensions\Source\Zonit.Extensions\Zonit.Extensions.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup Condition="!Exists('..\..\..\Zonit.Extensions\Source\Zonit.Extensions\Zonit.Extensions.csproj')">
 		<PackageReference Include="Zonit.Extensions" />
 	</ItemGroup>
 	
