@@ -1,6 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 
+#pragma warning disable IL2026 // EF Core requires unreferenced code - suppressed as EF Core is inherently incompatible with trimming
+#pragma warning disable IL3050 // EF Core requires dynamic code - suppressed as EF Core is inherently incompatible with AOT
+
 namespace Zonit.Extensions.Databases.SqlServer;
 
 public interface IContextBase

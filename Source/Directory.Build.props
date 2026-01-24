@@ -36,4 +36,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
+  <!-- Package Assets -->
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)..\Readme.md" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)..\Asset\icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>
