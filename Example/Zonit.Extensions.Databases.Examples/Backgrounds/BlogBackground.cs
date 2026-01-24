@@ -22,9 +22,9 @@ internal class BlogBackground(
 
         _logger.LogInformation("Create: {Id} {Title} {Content} {Created}", createBlog.Id, createBlog.Title, createBlog.Content, createBlog.Created);
 
-        // Read
+        // Read - using Where (WhereFreeText requires full-text index on the table)
         var query = _blogRepository.AsQuery();
-        query = query.WhereFreeText(x => x.Title, "word"); //.Select(x => new Blog { Title = x.Title });
+        query = query.Where(x => x.Title.Contains("Hello"));
         var read = await query.GetFirstAsync(stoppingToken);
 
         if (read is not null)
@@ -32,13 +32,9 @@ internal class BlogBackground(
         else
             _logger.LogInformation("Blog not found");
 
-        // Dto Read
-        var dto = await _blogRepository.Where(x => x.Title == "Hello World").GetFirstAsync<BlogDto>(stoppingToken);
-
-        if (dto is not null)
-            _logger.LogInformation("Dto Read: {Id} {Title} {Content} {Created}", dto.Id, dto.Title, dto.Content, dto.Created);
-        else
-            _logger.LogInformation("Blog not found");
+        // Note: DTO mapping requires IMappingService registration
+        // For production, register a mapping service (e.g., AutoMapper adapter)
+        // var dto = await _blogRepository.Where(x => x.Title == "Hello World").GetFirstAsync<BlogDto>(stoppingToken);
 
         // Update
         if (read is not null)
@@ -46,16 +42,16 @@ internal class BlogBackground(
             read.Title = "New Title";
             var update = await _blogRepository.UpdateAsync(read, stoppingToken);
 
-            if(update is true)
-                _logger.LogInformation("Blog updated");
+            if (update is not null)
+                _logger.LogInformation("Blog updated: {Title}", update.Title);
             else
                 _logger.LogInformation("Blog not updated");
         }
 
         // Delete
-        var delete = await _blogRepository.DeleteAsync(createBlog, stoppingToken);
+        var delete = await _blogRepository.DeleteAsync(createBlog, cancellationToken: stoppingToken);
 
-        if(delete is true)
+        if (delete is true)
             _logger.LogInformation("Blog deleted");
         else
             _logger.LogInformation("Blog not deleted");

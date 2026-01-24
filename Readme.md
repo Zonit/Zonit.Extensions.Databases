@@ -23,66 +23,46 @@ Install-Package Zonit.Extensions.Databases.SqlServer
 
 ## :rocket: Features
 
-- Speed up repository work — focus on your logic, not on database “plumbing”.
-- Simple abstractions for common CRUD operations.
-- Full support for DTO models.
-- Built-in support for query building (`Where`, `Include`, `Select`, paging, ordering, and more).
-- Plug-and-play: Easily extend repositories with custom methods or external data without touching the extension itself.
+- **Simplified Repository** - Single dependency constructor with `RepositoryContext<TContext>`
+- **Fluent Query API** - `Where`, `Include`, `ThenInclude`, `OrderBy`, `Skip`, `Take` and more
+- **Direct API on Repository** - No `AsQuery()` needed, just `repo.Where(...).GetListAsync()`
+- **Table Naming Convention** - `SetPrefix("Schema", "Prefix")` for automatic table configuration
+- **Extension Properties Convention** - Automatic in `DatabaseContextBase` (no manual call needed)
+- **Protected Context Access** - `CreateContextAsync()` and `ContextFactory` for custom queries
+- **Smart Delete** - Single `DeleteAsync()` method with automatic soft delete detection
+- **Value Objects Support** - Automatic EF Core converters for `Title`, `Price`, `Culture`, etc.
 
 
-## :bulb: **New! Extension Methods for External Data**
+## :star2: Quick Start
 
-You can easily **include properties and data from outside your database**, for example, by pulling from an external API or service.  
-This is useful when your model should have extra fields, computed properties, or needs to include data fetched live (not loaded from your DB).
-
-### How it works
-
-1. **Create an Extension Class** implementing `IDatabaseExtension<TModel>`
-    - In this class, implement business logic for fetching or computing the desired data.
+### 1. Create Repository (Simplified!)
 
 ```csharp
-using Zonit.Extensions.Databases.Examples.Entities;
-
-namespace Zonit.Extensions.Databases.Examples.Extensions;
-
-public class UserExtension : IDatabaseExtension<UserModel>
+// Single RepositoryContext<TContext> contains everything you need
+internal class BlogRepository(RepositoryContext<DatabaseContext> context)
+    : SqlServerRepository<Blog, DatabaseContext>(context), IBlogRepository
 {
-    public async Task<UserModel> InitializeAsync(Guid userId, CancellationToken cancellationToken = default)
+    // Custom method with direct database access
+    public async Task<Blog?> GetRecentAsync()
     {
-        // Here you can call a REST API or any other data source.
-        var model = new UserModel { 
-            Id = userId,
-            Name = "UserName",
-        };
-        return await Task.FromResult(model);
+        // Protected method for direct DbContext access
+        await using var context = await CreateContextAsync();
+        
+        return await context.Blogs
+            .Where(b => b.Created > DateTime.UtcNow.AddDays(-7))
+            .FirstOrDefaultAsync();
     }
 }
 ```
 
-2. **Reference the extension using `.Extension()`** in your repository query chain.
-
-```csharp
-var user = await _userRepository.Extension(x => x.UserExtension).GetByIdAsync(userId);
-```
-
-The `.Extension(x => x.UserExtension)` call tells the repository to supply or load the `UserExtension` property for your entity.  
-This can be `virtual`, `NotMapped`, or simply a property populated on demand.
-
-**Use case:**  
-Suppose your `Blog` entity has a `UserModel? User` property, but you want to always fetch the latest user data from an API instead of the DB.  
-Simply create an extension and reference it. The fetching, mapping, and attach process is handled by the extension system for you.
-
-
-## :book: Example Usage
-
-### Entity Model
+### 2. Entity Model (No [NotMapped] needed!)
 
 ```csharp
 public class Blog
 {
     public Guid Id { get; set; }
 
-    [NotMapped]
+    // No [NotMapped] attribute needed - use IgnoreExtensionProperties() in OnModelCreating
     public UserModel? User { get; set; }
     public Guid? UserId { get; set; }
 
@@ -92,188 +72,213 @@ public class Blog
 }
 ```
 
-### DTO Example
+### 3. DbContext Configuration (Simplified!)
 
 ```csharp
-internal class BlogDto(Blog x)
+internal class DatabaseContext(DbContextOptions<DatabaseContext> options) 
+    : DatabaseContextBase<DatabaseContext>(options)
 {
-    public string Id { get; set; } = $"Id: {x.Id}";
-    public string Title { get; set; } = $"Title: {x.Title}";
-    public string Content { get; set; } = $"Content: {x.Content}";
-    public string Created { get; set; } = $"Created: {x.Created:G}";
-}
+    public DbSet<Blog> Blogs { get; set; }
 
-public class UserModel
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; } = string.Empty;
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // Simplified table naming - replaces manual foreach loop
+        // Creates tables: [Zonit].[Examples.Blog], [Zonit].[Examples.User]
+        modelBuilder.SetPrefix("Zonit", "Examples");
+
+        // Call base to enable:
+        // - Value Objects converters
+        // - Auto-ignore extension properties (configurable via AutoIgnoreExtensionProperties)
+        base.OnModelCreating(modelBuilder);
+    }
+    
+    // Optional: Disable auto-ignoring extension properties
+    // protected override bool AutoIgnoreExtensionProperties => false;
 }
 ```
 
-### Repository Implementation
+
+## :book: Fluent Query API
+
+All query methods are available directly on the repository - no `AsQuery()` call needed!
+
+### Filter with Where
 
 ```csharp
-public interface IBlogRepository : IDatabaseRepository<Blog> { }
-
-internal class BlogRepository(DatabaseContext _context)
-    : DatabaseRepository<Blog>(_context), IBlogRepository { }
+var blogs = await repo.Where(x => x.Title.Contains("C#")).GetListAsync();
+var firstBlog = await repo.Where(x => x.Title == "Hello").GetFirstAsync();
 ```
 
-### Service Registration / Dependency Injection
+### Eager Loading with Include / ThenInclude
 
 ```csharp
-builder.Services.AddDbSqlServer<DatabaseContext>();
+// Single navigation property
+var blog = await repo
+    .Include(x => x.User)
+    .Where(x => x.Id == blogId)
+    .GetAsync();
 
-builder.Services.AddTransient<IBlogRepository, BlogRepository>();
+// ThenInclude for nested navigation
+var blog = await repo
+    .Include(x => x.User)
+        .ThenInclude(u => u.Organization)
+    .Where(x => x.Id == blogId)
+    .GetAsync();
+
+// Collection includes (same method, different signature)
+var blog = await repo
+    .Include(x => x.Comments)
+        .ThenInclude(c => c.Author)
+    .GetAsync();
 ```
 
-> **Note:** Your `DatabaseContext` must inherit from `ZonitDbContext<T>` to automatically enable Value Objects support.  
-> See [Value Objects Support](#value-objects-support) section below.
+### Ordering
 
-## :gear: CRUD and Query Operations
+```csharp
+var blogs = await repo
+    .OrderByDescending(x => x.Created)
+    .ThenBy(x => x.Title)
+    .GetListAsync();
+```
+
+### Pagination
+
+```csharp
+var page = await repo
+    .OrderBy(x => x.Created)
+    .Skip(20)
+    .Take(10)
+    .GetListAsync();
+```
+
+### Count and Exists
+
+```csharp
+var count = await repo.CountAsync();
+var exists = await repo.Where(x => x.Title == "Test").AnyAsync();
+```
+
+
+## :gear: CRUD Operations
 
 ### Create
 
 ```csharp
-var blog = await _blogRepository.AddAsync(new Blog
+var blog = await repo.AddAsync(new Blog
 {
     Title = "Hello World",
     Content = "Example content"
 });
 ```
 
-### Read (Single or DTO)
+### Read
 
 ```csharp
-var blogSingle = await _blogRepository.GetByIdAsync(blogId);
-var blogSingleDto = await _blogRepository.GetByIdAsync<BlogDto>(blogId);
-```
+// By ID
+var blog = await repo.GetByIdAsync(blogId);
 
-### Query First (with conditions)
+// With DTO mapping
+var blogDto = await repo.GetByIdAsync<BlogDto>(blogId);
 
-```csharp
-var firstBlog = await _blogRepository.Where(x => x.Title == "Hello World").GetFirstAsync();
-var firstBlogDto = await _blogRepository.Where(x => x.Title == "Hello World").GetFirstAsync<BlogDto>();
+// First with filter
+var blog = await repo.Where(x => x.Title == "Hello").GetFirstAsync();
+
+// All
+var blogs = await repo.GetListAsync();
 ```
 
 ### Update
 
 ```csharp
-var updated = await _blogRepository.UpdateAsync(blog.Id, entity =>
-{
-    entity.Title = "New Title";
-});
-```
+// By ID with action
+await repo.UpdateAsync(blogId, entity => entity.Title = "New Title");
 
-or
-
-```csharp
+// Or pass entity
 blog.Title = "New Title";
-var updated = await _blogRepository.UpdateAsync(blog);
+await repo.UpdateAsync(blog);
 ```
 
 ### Delete
 
 ```csharp
-var deleted = await _blogRepository.DeleteAsync(blog.Id);
-```
-or
-```csharp
-var deleted = await _blogRepository.DeleteAsync(blog);
-```
+// Default: soft delete if entity implements ISoftDeletable, otherwise hard delete
+await repo.DeleteAsync(blogId);
+// or
+await repo.DeleteAsync(blog);
 
-### Read All
-
-```csharp
-var blogs = await _blogRepository.GetListAsync();
-var blogsDto = await _blogRepository.GetListAsync<BlogDto>();
+// Force hard delete (permanently remove even if ISoftDeletable)
+await repo.DeleteAsync(blogId, forceDelete: true);
 ```
 
-## :page_with_curl: Repository APIs
+### Soft Delete with ISoftDeletable
 
-Below is an **overview of the main interfaces and methods**.  
-(See XML comments in code for details.)
-
----
-
-### `IDatabaseRepository<TEntity>`
-
-The main repository interface combines several specialized interfaces for database operations.
+Implement `ISoftDeletable` interface for automatic soft delete behavior:
 
 ```csharp
-// Queryable interface for building complex queries
-IDatabaseAsQueryable<TEntity> AsQuery();
+// Entity implements interface with optional custom logic
+public class Blog : ISoftDeletable
+{
+    public Guid Id { get; set; }
+    public string Title { get; set; }
+    public string Status { get; set; } = "active";
+    
+    // Required by ISoftDeletable
+    public DateTimeOffset? DeletedAt { get; set; }
+    
+    // Optional: Override to add custom logic when soft deleting
+    public void OnSoftDelete()
+    {
+        Status = "deleted";
+        // Add any additional cleanup logic here
+    }
+}
 
-// Query building and filtering:
-IDatabaseQueryOperations<TEntity> Extension(Expression<Func<TEntity, object?>> extensionExpression);
-IDatabaseQueryOperations<TEntity> Select(Expression<Func<TEntity, TEntity>> selector);
-IDatabaseQueryOperations<TEntity> Include(Expression<Func<TEntity, object?>> includeExpression);
-IDatabaseQueryOperations<TEntity> Where(Expression<Func<TEntity, bool>> whereExpression);
-IDatabaseQueryOperations<TEntity> WhereFullText(Expression<Func<TEntity, string>> propertySelector, string searchTerm);
-IDatabaseQueryOperations<TEntity> WhereFreeText(Expression<Func<TEntity, string>> propertySelector, string searchTerm);
+// Usage - automatically sets DeletedAt and calls OnSoftDelete()
+await repo.DeleteAsync(blogId);
 
-// Pagination:
-IDatabaseMultipleQueryable<TEntity> Skip(int count);
-IDatabaseMultipleQueryable<TEntity> Take(int count);
-
-// Sorting:
-IDatabaseMultipleRepository<TEntity> OrderBy(Expression<Func<TEntity, object>> keySelector);
-IDatabaseMultipleRepository<TEntity> OrderByDescending(Expression<Func<TEntity, object>> keySelector);
-
-// Single record access:
-Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
-Task<TDto?> GetByIdAsync<TDto>(int id, CancellationToken cancellationToken = default);
-Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-Task<TDto?> GetByIdAsync<TDto>(Guid id, CancellationToken cancellationToken = default);
-Task<TEntity?> GetAsync(CancellationToken cancellationToken = default);
-Task<TDto?> GetAsync<TDto>(CancellationToken cancellationToken = default);
-
-// Existence check:
-Task<bool> AnyAsync(CancellationToken cancellationToken = default);
-
-// Add operations:
-Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default);
-Task<TDto> AddAsync<TDto>(TEntity entity, CancellationToken cancellationToken = default);
-
-// Update operations:
-Task<bool> UpdateAsync(int id, Action<TEntity> updateAction, CancellationToken cancellationToken = default);
-Task<bool> UpdateAsync(Guid id, Action<TEntity> updateAction, CancellationToken cancellationToken = default);
-Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
-
-// Delete operations:
-Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
-Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
-Task<bool> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
-
-// Multiple records access:
-Task<IReadOnlyCollection<TEntity>?> GetListAsync(CancellationToken cancellationToken = default);
-Task<IReadOnlyCollection<TDto>?> GetListAsync<TDto>(CancellationToken cancellationToken = default);
-
-Task<TEntity?> GetFirstAsync(CancellationToken cancellationToken = default);
-Task<TDto?> GetFirstAsync<TDto>(CancellationToken cancellationToken = default);
-
-Task<int?> UpdateRangeAsync(Action<TEntity> updateAction, CancellationToken cancellationToken = default);
-Task<int> GetCountAsync(CancellationToken cancellationToken = default);
+// Restore (clears DeletedAt)
+await repo.RestoreAsync(blogId);
 ```
 
----
+**Delete behavior:**
+| Entity Type | `forceDelete: false` (default) | `forceDelete: true` |
+|-------------|-------------------------------|---------------------|
+| Implements `ISoftDeletable` | Soft delete (sets `DeletedAt`, calls `OnSoftDelete()`) | Hard delete (removes from DB) |
+| Does NOT implement `ISoftDeletable` | Hard delete | Hard delete |
 
-**Note:**  
-The deprecated `IDatabasesRepository<TEntity>` interface has been removed and is not supported anymore. Please migrate to `IDatabaseRepository<TEntity>` and related interfaces for all new development.
 
----
+## :bulb: Extension Properties
 
-## :star2: Why use this extension?
-- Build repository pattern code faster and cleaner.
-- Decouple your database logic from your app logic.
-- Easily extend your repositories with custom business logic or fetch data from external APIs with zero changes to the
+Load data from external sources (API, other services) into your entities:
 
----
+### 1. Create Extension Handler
+
+```csharp
+public class UserExtension : IDatabaseExtension<UserModel>
+{
+    public async Task<UserModel> InitializeAsync(Guid userId, CancellationToken ct = default)
+    {
+        // Fetch from external API, cache, or compute
+        return new UserModel { Id = userId, Name = "Loaded from API" };
+    }
+}
+```
+
+### 2. Use in Query
+
+```csharp
+var blog = await repo
+    .Extension(x => x.User)  // Load User via extension
+    .Where(x => x.Id == blogId)
+    .GetAsync();
+
+Console.WriteLine(blog.User?.Name); // "Loaded from API"
+```
+
 
 ## :package: Value Objects Support
 
-This library provides **built-in support for Value Objects** from `Zonit.Extensions` package.  
-Simply inherit your DbContext from `ZonitDbContext<T>` to automatically enable EF Core converters for:
+Inherit from `DatabaseContextBase<T>` to automatically enable EF Core converters:
 
 | Value Object | Database Type | Max Length | Use Case |
 |-------------|---------------|------------|----------|
@@ -286,43 +291,30 @@ Simply inherit your DbContext from `ZonitDbContext<T>` to automatically enable E
 | `Price` | `DECIMAL(19,8)` | - | Product prices (non-negative) |
 | `Money` | `DECIMAL(19,8)` | - | Balances, transactions (can be negative) |
 | `Color` | `NVARCHAR(100)` | 100 | Colors in OKLCH format |
-| `Asset` | `VARBINARY(MAX)` | - | Files with metadata (stored as byte[]) |
-
-### Quick Example
+| `Asset` | `VARBINARY(MAX)` | - | Files with metadata |
 
 ```csharp
-using Zonit.Extensions;
-using Zonit.Extensions.Databases.SqlServer;
-
-// Entity with Value Objects
 public class Article
 {
     public Guid Id { get; set; }
-    public Title Title { get; set; }
-    public Description Description { get; set; }
-    public UrlSlug Slug { get; set; }
-    public Culture Culture { get; set; }
-}
-
-// DbContext - inherit from ZonitDbContext<T>
-public class DatabaseContext : ZonitDbContext<DatabaseContext>
-{
-    public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options) { }
-
-    public DbSet<Article> Articles { get; set; }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        // Your configuration here
-        modelBuilder.Entity<Article>().ToTable("Articles");
-
-        // ✅ Call base to enable Value Objects
-        base.OnModelCreating(modelBuilder);
-    }
+    public Title Title { get; set; }           // Auto-converted, max 60 chars
+    public Description Description { get; set; } // Auto-converted, max 160 chars
+    public Price Price { get; set; }            // Auto-converted, decimal(19,8)
 }
 ```
 
----
+
+## :wrench: Service Registration
+
+```csharp
+// Register DbContext factory
+builder.Services.AddDbSqlServer<DatabaseContext>(options => 
+    options.UseSqlServer(connectionString));
+
+// Register repository - IServiceProvider is optional now!
+builder.Services.AddTransient<IBlogRepository, BlogRepository>();
+```
+
 
 ## :information_source: For more examples
-See the `Examples` project included in the repository.
+See the `Example` project included in the repository.

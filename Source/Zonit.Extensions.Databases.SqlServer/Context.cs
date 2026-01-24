@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Zonit.Extensions.Databases.SqlServer;
 
@@ -24,6 +25,14 @@ public abstract class ContextBase : IContextBase
     public required IServiceProvider ServiceProvider { get; set; }
 }
 
+/// <summary>
+/// Context wrapper that provides access to DbContext and factory.
+/// </summary>
+/// <remarks>
+/// Uses Entity Framework Core which requires dynamic code generation.
+/// </remarks>
+[RequiresUnreferencedCode("EF Core isn't fully compatible with trimming.")]
+[RequiresDynamicCode("EF Core isn't fully compatible with NativeAOT.")]
 public class Context<TContext> : ContextBase, IContext<TContext>
     where TContext : DbContext
 {
@@ -45,6 +54,14 @@ public class Context<TContext> : ContextBase, IContext<TContext>
     IDbContextFactory<TContext> IContext<TContext>.LocalDbContextFactory => DbContextFactory;
 }
 
+/// <summary>
+/// Adapter to convert typed IDbContextFactory to non-generic one.
+/// </summary>
+/// <remarks>
+/// Uses Entity Framework Core which requires dynamic code generation.
+/// </remarks>
+[RequiresUnreferencedCode("EF Core isn't fully compatible with trimming.")]
+[RequiresDynamicCode("EF Core isn't fully compatible with NativeAOT.")]
 public class DbContextFactoryAdapter<TContext>(IDbContextFactory<TContext> innerFactory) : IDbContextFactory<DbContext>
     where TContext : DbContext
 {

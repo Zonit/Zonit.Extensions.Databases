@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Zonit.Extensions;
 
 namespace Zonit.Extensions.Databases.SqlServer.Extensions;
@@ -10,6 +12,142 @@ namespace Zonit.Extensions.Databases.SqlServer.Extensions;
 /// </summary>
 public static class ModelBuilderExtensions
 {
+    /// <summary>
+    /// Automatically ignores extension properties (properties ending with "Model" that have corresponding "Id" property).
+    /// This eliminates the need for [NotMapped] attribute on extension properties.
+    /// </summary>
+    /// <param name="modelBuilder">The ModelBuilder instance.</param>
+    /// <returns>The ModelBuilder instance for chaining.</returns>
+    /// <example>
+    /// <code>
+    /// // Before: Required [NotMapped] attribute
+    /// public class Blog
+    /// {
+    ///     [NotMapped]
+    ///     public UserModel? User { get; set; }
+    ///     public Guid? UserId { get; set; }
+    /// }
+    /// 
+    /// // After: No attribute needed, just call IgnoreExtensionProperties()
+    /// protected override void OnModelCreating(ModelBuilder modelBuilder)
+    /// {
+    ///     modelBuilder.IgnoreExtensionProperties();
+    ///     base.OnModelCreating(modelBuilder);
+    /// }
+    /// </code>
+    /// </example>
+    public static ModelBuilder IgnoreExtensionProperties(this ModelBuilder modelBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var clrType = entityType.ClrType;
+            var properties = clrType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            // Find all properties that look like extensions (PropertyName + PropertyNameId pattern)
+            var propertyNames = new HashSet<string>(properties.Select(p => p.Name));
+
+            foreach (var property in properties)
+            {
+                var propertyName = property.Name;
+
+                // Check if this property has a corresponding Id property
+                // e.g., "User" has "UserId", "Organization" has "OrganizationId"
+                var idPropertyName = $"{propertyName}Id";
+
+                if (propertyNames.Contains(idPropertyName))
+                {
+                    // This is likely an extension property - check if it's a complex type
+                    var propertyType = property.PropertyType;
+                    var underlyingType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+
+                    // Ignore if it's a class (not a value type, not a primitive, not a built-in type)
+                    if (underlyingType.IsClass &&
+                        underlyingType != typeof(string) &&
+                        !underlyingType.IsPrimitive)
+                    {
+                        modelBuilder.Entity(clrType).Ignore(propertyName);
+                    }
+                }
+            }
+        }
+
+        return modelBuilder;
+    }
+
+    /// <summary>
+    /// Configures table naming convention for all entities.
+    /// Generates table names in format: [schema].[prefix.EntityName]
+    /// </summary>
+    /// <param name="modelBuilder">The ModelBuilder instance.</param>
+    /// <param name="schema">The database schema (e.g., "Zonit", "dbo").</param>
+    /// <param name="prefix">Optional prefix for table names (e.g., "Examples", "Blog").</param>
+    /// <returns>The ModelBuilder instance for chaining.</returns>
+    /// <example>
+    /// <code>
+    /// protected override void OnModelCreating(ModelBuilder modelBuilder)
+    /// {
+    ///     // Tables will be: [Zonit].[Examples.Blog], [Zonit].[Examples.User]
+    ///     modelBuilder.SetPrefix("Zonit", "Examples");
+    ///     
+    ///     // Or without prefix: [Zonit].[Blog], [Zonit].[User]
+    ///     modelBuilder.SetPrefix("Zonit");
+    ///     
+    ///     base.OnModelCreating(modelBuilder);
+    /// }
+    /// </code>
+    /// </example>
+    public static ModelBuilder SetPrefix(this ModelBuilder modelBuilder, string schema, string? prefix = null)
+    {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+        ArgumentException.ThrowIfNullOrWhiteSpace(schema);
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var entityName = entityType.ClrType.Name;
+            var tableName = string.IsNullOrWhiteSpace(prefix)
+                ? entityName
+                : $"{prefix}.{entityName}";
+
+            modelBuilder.Entity(entityType.Name).ToTable(tableName, schema);
+        }
+
+        return modelBuilder;
+    }
+
+    /// <summary>
+    /// Configures table naming convention with a custom naming function.
+    /// </summary>
+    /// <param name="modelBuilder">The ModelBuilder instance.</param>
+    /// <param name="tableNameFactory">Function that generates table name from entity type.</param>
+    /// <param name="schema">The database schema.</param>
+    /// <returns>The ModelBuilder instance for chaining.</returns>
+    /// <example>
+    /// <code>
+    /// modelBuilder.SetPrefix(
+    ///     entityType => $"App_{entityType.Name}",
+    ///     schema: "dbo");
+    /// </code>
+    /// </example>
+    public static ModelBuilder SetPrefix(
+        this ModelBuilder modelBuilder,
+        Func<Type, string> tableNameFactory,
+        string schema)
+    {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+        ArgumentNullException.ThrowIfNull(tableNameFactory);
+        ArgumentException.ThrowIfNullOrWhiteSpace(schema);
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var tableName = tableNameFactory(entityType.ClrType);
+            modelBuilder.Entity(entityType.Name).ToTable(tableName, schema);
+        }
+
+        return modelBuilder;
+    }
+
     /// <summary>
     /// Configures global value converters for all Zonit Value Objects.
     /// Call this method in your DbContext's OnModelCreating or ConfigureConventions.

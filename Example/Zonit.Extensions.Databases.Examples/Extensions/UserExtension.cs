@@ -4,10 +4,11 @@ namespace Zonit.Extensions.Databases.Examples.Extensions;
 
 public class UserExtension : IDatabaseExtension<UserModel>
 {
-    public async Task<UserModel?> InitializeAsync(Guid UserId, CancellationToken cancellationToken = default)
+    public async Task<UserModel?> InitializeAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var model = new UserModel { 
-            Id = UserId,
+        var model = new UserModel
+        {
+            Id = id,
             Name = "UserName",
         };
 

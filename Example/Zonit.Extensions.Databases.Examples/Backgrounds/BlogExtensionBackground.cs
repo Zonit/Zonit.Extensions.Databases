@@ -24,10 +24,11 @@ internal class BlogExtensionBackground(
 
         _logger.LogInformation("Create: {Id} {Title} {Content} {Created}", createBlog.Id, createBlog.Title, createBlog.Content, createBlog.Created);
 
-        // Read
+        // Read - using fluent query API
         var read = await _blogRepository
             .Extension(x => x.User)
-            .GetByIdAsync(createBlog.Id, stoppingToken);
+            .Where(x => x.Id == createBlog.Id)
+            .GetAsync(stoppingToken);
 
         if (read is not null)
         {

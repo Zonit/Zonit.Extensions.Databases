@@ -15,7 +15,8 @@ internal class BlogsBackground(
         await Task.Delay(2000, stoppingToken);
 
         // Update range
-        var count = await _blogsRepository.Where(x => x.Created > DateTime.Now.AddYears(-1)).UpdateRangeAsync(x => {
+        var count = await _blogsRepository.Where(x => x.Created > DateTime.Now.AddYears(-1)).UpdateRangeAsync(x =>
+        {
             x.Title = "New all title";
             x.Content = "New all content";
         }, stoppingToken);
@@ -23,30 +24,31 @@ internal class BlogsBackground(
         if (count is not null)
             _logger.LogInformation("Updated {Count} blogs", count);
 
-
-        // Read
+        // Note: DTO mapping requires IMappingService registration
+        // For production, register a mapping service (e.g., AutoMapper adapter)
+        // Read with Extension
         var blogs = await _blogsRepository
+            .AsQuery()
             .Extension(x => x.User)
-            .GetListAsync<BlogDto>(stoppingToken);
+            .GetListAsync(stoppingToken);
 
-        if(blogs is not null)
+        if (blogs is not null)
             foreach (var blog in blogs)
             {
                 _logger.LogInformation("Blog: {User} {Id} {Title} {Content} {Created}", blog.User, blog.Id, blog.Title, blog.Content, blog.Created);
             }
         else
             _logger.LogInformation("Blogs not found");
-        
 
         // Read first
         var blogFirst = await _blogsRepository
             .OrderBy(x => x.Id)
-            .GetFirstAsync<BlogDto>(stoppingToken);
+            .GetFirstAsync(stoppingToken);
 
         if (blogFirst is not null)
             _logger.LogInformation("First blog: {Id} {Title} {Content} {Created}", blogFirst.Id, blogFirst.Title, blogFirst.Content, blogFirst.Created);
         else
             _logger.LogInformation("Blog not found");
-        
+
     }
 }

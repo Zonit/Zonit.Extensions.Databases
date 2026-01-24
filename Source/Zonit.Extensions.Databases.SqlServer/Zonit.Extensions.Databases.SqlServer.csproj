@@ -1,28 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-		<Description>SQL Server implementation of Zonit.Extensions.Databases - provides Entity Framework Core-based repository patterns with flexible CRUD operations, dynamic query building, DTO support, and seamless integration of external or computed data from any source.</Description>
-		<PackageTags>Zonit;Repository;CRUD;Database;Extensions;DTO;SqlServer;DataAccess;ExternalData;Integration;API;CQRS;EntityFramework;EFCore</PackageTags>
+		<PackageId>Zonit.Extensions.Databases.SqlServer</PackageId>
+		<Title>Zonit.Extensions.Databases.SqlServer</Title>
+		<Description>SQL Server provider for Zonit.Extensions.Databases - Entity Framework Core repository with fluent query API, ThenInclude, DTO mapping, and full-text search support.</Description>
+		<PackageTags>Zonit;Repository;CRUD;Database;SqlServer;EFCore;EntityFramework;FluentAPI;ThenInclude</PackageTags>
+	</PropertyGroup>
+
+	<!-- AOT support only for .NET 10+ -->
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+		<IsAotCompatible>true</IsAotCompatible>
+		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+	</PropertyGroup>
+
+	<!-- Suppress AOT warnings for .NET 8/9 (not supported) -->
+	<PropertyGroup Condition="'$(TargetFramework)' != 'net10.0'">
+		<NoWarn>$(NoWarn);IL2026;IL2087;IL2090;IL2091;IL3050;IL3051</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.EntityFrameworkCore" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" />
-	</ItemGroup>
-
-	<!-- Use ProjectReference for local development, PackageReference for NuGet -->
-	<!--<ItemGroup Condition="Exists('..\..\..\Zonit.Extensions\Source\Zonit.Extensions\Zonit.Extensions.csproj')">
-		<ProjectReference Include="..\..\..\Zonit.Extensions\Source\Zonit.Extensions\Zonit.Extensions.csproj" />
-	</ItemGroup>-->
-	
-	<ItemGroup>
 		<PackageReference Include="Zonit.Extensions" />
 	</ItemGroup>
 	
 	<ItemGroup>
-		<ProjectReference Include="..\Zonit.Extensions.Databases.Abstractions\Zonit.Extensions.Databases.Abstractions.csproj" />
+		<ProjectReference Include="..\Zonit.Extensions.Databases\Zonit.Extensions.Databases.csproj" />
 	</ItemGroup>
 </Project>

@@ -54,14 +54,14 @@ internal class Program
 
         builder.Services.AddHostedService<DatabaseInitialize>();
 
-        builder.Services.AddTransient<IBlogRepository, BlogRepository>();
+        builder.Services.AddScoped<IBlogRepository, BlogRepository>();
 
         builder.Services.AddHostedService<BlogBackground>();
         builder.Services.AddHostedService<BlogsBackground>();
 
         builder.Services.AddHostedService<BlogExtensionBackground>();
-        builder.Services.AddScoped<IDatabaseExtension<UserModel>, UserExtension>();
-        builder.Services.AddScoped<IDatabaseExtension<OrganizationModel>, OrganizationExtension>();
+        builder.Services.AddDatabaseExtension<UserModel, UserExtension>();
+        builder.Services.AddDatabaseExtension<OrganizationModel, OrganizationExtension>();
 
         var app = builder.Build();
         app.Run();

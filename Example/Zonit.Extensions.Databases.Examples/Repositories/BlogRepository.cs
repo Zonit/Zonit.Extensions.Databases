@@ -2,26 +2,56 @@
 using Zonit.Extensions.Databases.Examples.Data;
 using Zonit.Extensions.Databases.Examples.Entities;
 using Zonit.Extensions.Databases.SqlServer;
-using Zonit.Extensions.Databases.SqlServer.Repositories;
 
 namespace Zonit.Extensions.Databases.Examples.Repositories;
 
-internal class BlogRepository(Context<DatabaseContext> context) : DatabaseRepository<Blog>(context), IBlogRepository
+/// <summary>
+/// Blog repository implementation with simplified constructor.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Uses <see cref="RepositoryContext{TContext}"/> for simplified dependency injection.
+/// All required dependencies (IDbContextFactory, IServiceProvider) are bundled in one container.
+/// </para>
+/// <para>
+/// <b>Available context options:</b>
+/// <list type="bullet">
+/// <item><see cref="SqlServerRepository{TEntity, TContext}.CreateContextAsync"/> - creates new DbContext for each operation (recommended for parallel queries)</item>
+/// <item>Protected <c>ContextFactory</c> property - for advanced scenarios requiring multiple contexts</item>
+/// </list>
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// // Simple repository - one parameter!
+/// internal class BlogRepository(RepositoryContext&lt;DatabaseContext&gt; context)
+///     : SqlServerRepository&lt;Blog, DatabaseContext&gt;(context), IBlogRepository;
+///
+/// // With custom dependencies
+/// internal class BlogRepository(
+///     RepositoryContext&lt;DatabaseContext&gt; context,
+///     IMyCustomService myService)
+///     : SqlServerRepository&lt;Blog, DatabaseContext&gt;(context), IBlogRepository
+/// {
+///     public async Task CustomMethodAsync()
+///     {
+///         // Use myService and CreateContextAsync()
+///     }
+/// }
+/// </code>
+/// </example>
+internal class BlogRepository(RepositoryContext<DatabaseContext> context)
+    : SqlServerRepository<Blog, DatabaseContext>(context), IBlogRepository
 {
     /// <summary>
-    /// Przykład własnej implementacji metody dostępu do danych 
-    /// z bezpośrednim wykorzystaniem kontekstu bazy danych.
+    /// Custom method demonstrating DbContext usage via CreateContextAsync.
     /// </summary>
     public async Task GetCustomAsync()
     {
-        // Bezpośredni dostęp do kontekstu bazy danych
-        var dbContext = context.DbContext;
-
-        // Wykonanie zapytania za pomocą EF Core
+        await using var dbContext = await CreateContextAsync();
         var blog = await dbContext.Blogs
             .FirstOrDefaultAsync(b => b.Created > DateTime.UtcNow.AddDays(-30));
 
-        // Sprawdzenie wyników i własna logika biznesowa
         if (blog is null)
         {
             Console.WriteLine("╔════════════════════════════════════════╗");
@@ -30,7 +60,6 @@ internal class BlogRepository(Context<DatabaseContext> context) : DatabaseReposi
             return;
         }
 
-        // Formatowanie i wyświetlenie wyniku
         Console.WriteLine("╔════════════════════════════════════════╗");
         Console.WriteLine("║            Znaleziono blog             ║");
         Console.WriteLine("╠════════════════════════════════════════╣");
