@@ -166,6 +166,11 @@ public static class ModelBuilderExtensions
                     property.SetValueConverter(new CultureConverter());
                     property.SetMaxLength(10);
                 }
+                else if (property.ClrType == typeof(Currency))
+                {
+                    property.SetValueConverter(new CurrencyConverter());
+                    property.SetMaxLength(Currency.MaxLength);
+                }
                 else if (property.ClrType == typeof(UrlSlug))
                 {
                     property.SetValueConverter(new UrlSlugConverter());
@@ -213,6 +218,16 @@ public static class ModelBuilderExtensions
                     property.SetValueConverter(new ColorConverter());
                     property.SetMaxLength(100); // OKLCH format with alpha
                 }
+                else if (property.ClrType == typeof(FileSize))
+                {
+                    property.SetValueConverter(new FileSizeConverter());
+                    // FileSize stored as bigint (long bytes)
+                }
+                else if (property.ClrType == typeof(Schedule))
+                {
+                    property.SetValueConverter(new ScheduleConverter());
+                    property.SetMaxLength(Schedule.StorageSize); // 16 bytes binary
+                }
             }
         }
 
@@ -230,6 +245,11 @@ public static class ModelBuilderExtensions
             .Properties<Culture>()
             .HaveConversion<CultureConverter>()
             .HaveMaxLength(10);
+
+        configurationBuilder
+            .Properties<Currency>()
+            .HaveConversion<CurrencyConverter>()
+            .HaveMaxLength(Currency.MaxLength);
 
         configurationBuilder
             .Properties<UrlSlug>()
@@ -276,6 +296,17 @@ public static class ModelBuilderExtensions
             .HaveConversion<ColorConverter>()
             .HaveMaxLength(100);
         // Color stored as OKLCH string
+
+        configurationBuilder
+            .Properties<FileSize>()
+            .HaveConversion<FileSizeConverter>();
+        // FileSize stored as bigint (long bytes)
+
+        configurationBuilder
+            .Properties<Schedule>()
+            .HaveConversion<ScheduleConverter>()
+            .HaveMaxLength(Schedule.StorageSize);
+        // Schedule stored as varbinary(16)
     }
 }
 
@@ -289,6 +320,21 @@ public class CultureConverter : ValueConverter<Culture, string>
         : base(
             v => v.Value,
             v => string.IsNullOrWhiteSpace(v) ? default : new Culture(v))
+    {
+    }
+}
+
+/// <summary>
+/// Value converter for Currency value object.
+/// Stores the alphabetic currency code (e.g., "USD", "PLN", "BTC").
+/// Handles null/empty values from database by returning default (empty) Currency.
+/// </summary>
+public class CurrencyConverter : ValueConverter<Currency, string>
+{
+    public CurrencyConverter()
+        : base(
+            v => v.Code,
+            v => string.IsNullOrWhiteSpace(v) ? default : new Currency(v))
     {
     }
 }
@@ -416,6 +462,35 @@ public class ColorConverter : ValueConverter<Color, string>
         : base(
             v => v.CssOklch,
             v => string.IsNullOrWhiteSpace(v) ? Color.Transparent : Color.Parse(v, null))
+    {
+    }
+}
+
+/// <summary>
+/// Value converter for <see cref="FileSize"/> value object.
+/// Stores the size as <c>long</c> (bytes) — maps to SQL <c>bigint</c>.
+/// </summary>
+public class FileSizeConverter : ValueConverter<FileSize, long>
+{
+    public FileSizeConverter()
+        : base(
+            v => v.Bytes,
+            v => v < 0 ? FileSize.Zero : new FileSize(v))
+    {
+    }
+}
+
+/// <summary>
+/// Value converter for <see cref="Schedule"/> value object.
+/// Stores the schedule as a fixed 16-byte binary blob — maps to SQL <c>varbinary(16)</c>.
+/// Empty/short blobs deserialize to <see cref="Schedule.Empty"/>.
+/// </summary>
+public class ScheduleConverter : ValueConverter<Schedule, byte[]>
+{
+    public ScheduleConverter()
+        : base(
+            v => v.ToBytes(),
+            v => Schedule.FromBytes(v))
     {
     }
 }

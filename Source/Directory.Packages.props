@@ -4,7 +4,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <!-- Version -->
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <!-- Package Output -->
@@ -18,7 +18,7 @@
   </ItemGroup>
   <!-- Common Dependencies -->
   <ItemGroup>
-    <PackageVersion Include="Zonit.Extensions" Version="0.2.8" />
+    <PackageVersion Include="Zonit.Extensions" Version="0.2.12" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.102" PrivateAssets="All" />
   </ItemGroup>
   <!-- Source Generators (netstandard2.0) -->
